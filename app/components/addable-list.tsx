@@ -1,4 +1,5 @@
 import { Link } from "remix";
+import { linkBoxFrameClasses } from "./link-box";
 import { TitledSection } from "./titled-section";
 
 interface Props<T> {
@@ -19,7 +20,7 @@ export const AddableList = <T extends unknown>({
         {entities.slice(0, 3).map(getListItem)}
         <Link
           to={seeAllHref}
-          className="hover:bg-white hover:text-gray-800 hover:border-gray-500 bg-gray-50 text-gray-500 border border-gray-300 py-1 text-center"
+          className={`${linkBoxFrameClasses} py-1 text-center`}
         >
           See all
         </Link>

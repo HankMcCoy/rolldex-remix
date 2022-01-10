@@ -29,6 +29,7 @@ export let loader: LoaderFunction = ({ params }) => {
   const result: LoaderData = { campaign, id: campaignId };
   return result;
 };
+
 interface Props {
   params: {
     campaignId: string;
@@ -58,9 +59,11 @@ export default function ViewCampaign({ params }: Props) {
             {campaign.description}
           </TitledSection>
           <TitledSection title="Members">
-            {members.map((m) => (
-              <LinkBox title={m.email} href="#" />
-            ))}
+            <div className="flex flex-col space-y-2">
+              {members.map((m) => (
+                <LinkBox title={m.email} href="#" />
+              ))}
+            </div>
           </TitledSection>
           <TitledSection title="Sessions">
             <div className="flex flex-col space-y-2">

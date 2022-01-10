@@ -9,8 +9,11 @@ const navigation = [
   { name: "Systems", href: "/systems", icon: BookOpenIcon },
 ];
 
-const intersperse = <T extends unknown>(list: Array<T>, separator: T) =>
-  list.slice(1).reduce((a, i) => [...a, separator, i], [list[0]]);
+const intersperse = <T extends unknown>(
+  list: Array<T>,
+  separator: (i: number) => T
+) =>
+  list.slice(1).reduce((a, item, i) => [...a, item, separator(i)], [list[0]]);
 
 export const Sidebar = () => {
   const location = useLocation();
@@ -69,11 +72,11 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
         {breadcrumbs && breadcrumbs.length
           ? intersperse(
               breadcrumbs.map((b) => (
-                <Link to={b.href}>
-                  <a>{b.text}</a>
+                <Link key={b.href} to={b.href}>
+                  {b.text}
                 </Link>
               )),
-              <span>&gt;</span>
+              (i) => <span key={i}>&gt;</span>
             )
           : null}
       </div>

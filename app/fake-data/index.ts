@@ -48,11 +48,30 @@ const NounTypeMap = Object.freeze({
   FACTION: null,
 });
 export type NounType = keyof typeof NounTypeMap;
-export const asNounType = (val: string): NounType | undefined => {
-  if (NounTypeMap.hasOwnProperty(val)) {
-    return val as NounType;
+export const asNounType = (
+  val: string | undefined | null
+): NounType | undefined => {
+  if (val && NounTypeMap.hasOwnProperty(val.toUpperCase())) {
+    return val.toUpperCase() as NounType;
   }
   return undefined;
+};
+
+export const getNounTypeFromUrlFragment = (
+  fragment: string | null
+): NounType | undefined => {
+  switch (fragment) {
+    case "people":
+      return "PERSON";
+    case "places":
+      return "PLACE";
+    case "things":
+      return "THING";
+    case "factions":
+      return "FACTION";
+    default:
+      return undefined;
+  }
 };
 
 export type Noun = {
@@ -74,6 +93,25 @@ export type DraftNoun = $Diff<
 
 export const nouns = nounsRaw as Array<Noun>;
 export const nounsById = indexBy(nouns, "id");
+
+export const nounTypePluralDisplayText = {
+  PERSON: "People",
+  PLACE: "Places",
+  THING: "Things",
+  FACTION: "Factions",
+};
+export const nounTypeSingularDisplayText = {
+  PERSON: "Person",
+  PLACE: "Place",
+  THING: "Thing",
+  FACTION: "Faction",
+};
+export const nounTypeUrlFragment = {
+  PERSON: "people",
+  PLACE: "places",
+  THING: "things",
+  FACTION: "factions",
+};
 
 /**
  * SESSIONS
