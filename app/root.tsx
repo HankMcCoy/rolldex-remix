@@ -10,11 +10,13 @@ import {
 import type { LinksFunction } from "remix";
 
 import tailwindUrl from "./tailwind.css";
+import styles from "./styles/app.css";
 
 // https://remix.run/api/app#links
 export let links: LinksFunction = () => {
   return [
     { rel: "stylesheet", href: tailwindUrl },
+    { rel: "stylesheet", href: styles },
     {
       rel: "stylesheet",
       href: "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700",
@@ -104,7 +106,7 @@ function Document({
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="text-gray-800">
         {children}
         <ScrollRestoration />
         <Scripts />

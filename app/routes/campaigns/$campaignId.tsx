@@ -80,25 +80,25 @@ export default function ViewCampaign({ params }: Props) {
         <div className="flex-1 flex flex-col space-y-6">
           <AddableList
             title="People"
-            seeAllHref={`/campaigns/${id}/nouns/people`}
+            seeAllHref={`/campaigns/${id}/nouns?nounType=people`}
             entities={people}
             getListItem={getNounEl}
           />
           <AddableList
             title="Factions"
-            seeAllHref={`/campaigns/${id}/nouns/factions`}
+            seeAllHref={`/campaigns/${id}/nouns?nounType=factions`}
             entities={factions}
             getListItem={getNounEl}
           />
           <AddableList
             title="Places"
-            seeAllHref={`/campaigns/${id}/nouns/places`}
+            seeAllHref={`/campaigns/${id}/nouns?nounType=places`}
             entities={places}
             getListItem={getNounEl}
           />
           <AddableList
             title="Things"
-            seeAllHref={`/campaigns/${id}/nouns/things`}
+            seeAllHref={`/campaigns/${id}/nouns?nounType=things`}
             entities={things}
             getListItem={getNounEl}
           />

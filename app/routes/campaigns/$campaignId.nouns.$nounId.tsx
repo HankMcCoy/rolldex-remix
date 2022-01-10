@@ -1,4 +1,5 @@
 import { Content } from "~/components/layout";
+import { Markdown } from "~/components/markdown";
 import {
   campaignsById,
   Noun,
@@ -8,6 +9,7 @@ import {
   nounsById,
 } from "~/fake-data";
 import { LoaderFunction, useLoaderData } from "remix";
+import { TitledSection } from "~/components/titled-section";
 
 type LoaderData = {
   noun: Noun;
@@ -31,7 +33,7 @@ export default function ViewCampaign({ params }: Props) {
 
   return (
     <Content
-      heading={campaign.name}
+      heading={noun.name}
       breadcrumbs={[
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
@@ -41,14 +43,18 @@ export default function ViewCampaign({ params }: Props) {
             nounTypeUrlFragment[noun.noun_type]
           }`,
         },
-        {
-          text: noun.name,
-          href: `/campaigns/${campaign.id}/nouns/${noun.id}`,
-        },
       ]}
     >
       <div className="flex space-x-6">
-        <div className="flex-1 flex flex-col space-y-6">{noun.name}</div>
+        <div className="flex-1 flex flex-col space-y-6">
+          <TitledSection title="Summary">{noun.summary}</TitledSection>
+          <TitledSection title="Notes">
+            <Markdown>{noun.notes}</Markdown>
+          </TitledSection>
+          <TitledSection title="Private Notes">
+            <Markdown>{noun.private_notes}</Markdown>
+          </TitledSection>
+        </div>
       </div>
     </Content>
   );

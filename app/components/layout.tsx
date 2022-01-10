@@ -13,13 +13,13 @@ const intersperse = <T extends unknown>(
   list: Array<T>,
   separator: (i: number) => T
 ) =>
-  list.slice(1).reduce((a, item, i) => [...a, item, separator(i)], [list[0]]);
+  list.slice(1).reduce((a, item, i) => [...a, separator(i), item], [list[0]]);
 
 export const Sidebar = () => {
   const location = useLocation();
 
   return (
-    <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
+    <div className="hidden lg:flex lg:w-56 lg:flex-col lg:fixed lg:inset-y-0">
       {/* Sidebar component, swap this element with another sidebar if you like */}
       <div className="flex flex-col flex-grow bg-gray-700 overflow-y-auto">
         <div className="h-24 flex items-center flex-shrink-0 px-4">
@@ -67,7 +67,7 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
   heading,
 }) => {
   return (
-    <div className="px-6 h-24 bg-violet-700 text-white flex flex-col justify-center space-y-1">
+    <div className="px-6 h-24 bg-violet-800 text-white flex flex-col justify-center space-y-1">
       <div className="flex flex-row space-x-1">
         {breadcrumbs && breadcrumbs.length
           ? intersperse(
@@ -89,7 +89,7 @@ export const Page: FunctionComponent = ({ children }) => {
   return (
     <div>
       <Sidebar />
-      <div className="lg:pl-64 flex flex-col flex-1">{children}</div>
+      <div className="lg:pl-56 flex flex-col flex-1">{children}</div>
     </div>
   );
 };

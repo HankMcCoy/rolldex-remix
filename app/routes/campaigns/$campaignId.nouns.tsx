@@ -32,7 +32,9 @@ export let loader: LoaderFunction = ({ request, params }) => {
       })}`
     );
   const campaign = campaignsById[campaignId];
-  const nounsOfType = nouns.filter((n) => n.noun_type === nounType);
+  const nounsOfType = nouns
+    .filter((n) => n.noun_type === nounType)
+    .sort((a, b) => (a.name > b.name ? 1 : -1));
   return { nounType, nounsOfType, campaign };
 };
 
