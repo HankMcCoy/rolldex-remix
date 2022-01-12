@@ -7,7 +7,14 @@ import {
   Campaign,
   nounsById,
 } from "~/fake-data";
-import { LoaderFunction, useLoaderData } from "remix";
+import {
+  LoaderFunction,
+  ActionFunction,
+  useLoaderData,
+  useTransition,
+  redirect,
+  Form,
+} from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { CmdCtrlKey } from "~/util";
 
@@ -30,6 +37,7 @@ interface Props {
 }
 export default function EditNoun({ params }: Props) {
   const { noun, campaign } = useLoaderData<LoaderData>();
+  const transition = useTransition();
 
   return (
     <Content
@@ -61,26 +69,41 @@ export default function EditNoun({ params }: Props) {
     >
       <div className="flex space-x-6">
         <div className="flex-1 flex flex-col space-y-6">
-          <form
+          <Form
             method="post"
             action={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
             className="max-w-md space-y-2"
           >
-            <TextField label="Name:" defaultValue={noun.name} />
-            <TextareaField
-              label="Summary:"
-              defaultValue={noun.summary}
-              rows={3}
-            />
-            <TextareaField label="Notes:" defaultValue={noun.notes} rows={6} />
-            <TextareaField
-              label="Private Notes:"
-              defaultValue={noun.private_notes}
-              rows={6}
-            />
-          </form>
+            <fieldset disabled={transition.state === "submitting"}>
+              <input type="hidden" name="campaignId" value={campaign.id} />
+              <input type="hidden" name="nounId" value={noun.id} />
+              <TextField label="Name:" defaultValue={noun.name} />
+              <TextareaField
+                label="Summary:"
+                defaultValue={noun.summary}
+                rows={3}
+              />
+              <TextareaField
+                label="Notes:"
+                defaultValue={noun.notes}
+                rows={6}
+              />
+              <TextareaField
+                label="Private Notes:"
+                defaultValue={noun.private_notes}
+                rows={6}
+              />
+            </fieldset>
+          </Form>
         </div>
       </div>
     </Content>
   );
 }
+
+export const action: ActionFunction = async ({ request }) => {
+  const body = await request.formData();
+  const campaignId = body.get("campaignId");
+  const nounId = body.get("nounId");
+  return redirect(`/campaigns/${campaignId}/nouns/${nounId}`);
+};
