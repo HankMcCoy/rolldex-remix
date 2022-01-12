@@ -61,27 +61,52 @@ interface Breadcrumb {
 interface PageHeaderProps {
   heading: string;
   breadcrumbs?: Array<Breadcrumb>;
+  controls?: React.ReactNode;
 }
 export const PageHeader: FunctionComponent<PageHeaderProps> = ({
   breadcrumbs,
   heading,
+  controls,
 }) => {
   return (
-    <div className="px-6 h-24 bg-violet-800 text-white flex flex-col justify-center space-y-1">
-      <div className="flex flex-row space-x-1">
-        {breadcrumbs && breadcrumbs.length
-          ? intersperse(
-              breadcrumbs.map((b) => (
-                <Link key={b.href} to={b.href}>
-                  {b.text}
-                </Link>
-              )),
-              (i) => <span key={i}>&gt;</span>
-            )
-          : null}
+    <div className="px-6 h-24 bg-violet-800 text-white flex justify-between items-center">
+      <div className="flex flex-col justify-center space-y-1">
+        <div className="flex flex-row space-x-1">
+          {breadcrumbs && breadcrumbs.length
+            ? intersperse(
+                breadcrumbs.map((b) => (
+                  <Link key={b.href} to={b.href}>
+                    {b.text}
+                  </Link>
+                )),
+                (i) => <span key={i}>&gt;</span>
+              )
+            : null}
+        </div>
+        <h1 className="text-4xl">{heading}</h1>
       </div>
-      <h1 className="text-4xl">{heading}</h1>
+      <div className="flex-initial">{controls}</div>
     </div>
+  );
+};
+
+interface HeaderLinkButtonProps {
+  to: string;
+  title: string;
+}
+export const HeaderLinkButton: FunctionComponent<HeaderLinkButtonProps> = ({
+  to,
+  title,
+  children,
+}) => {
+  return (
+    <Link
+      to={to}
+      title={title}
+      className="flex items-center h-10 px-4 white border border-white border-r"
+    >
+      {children}
+    </Link>
   );
 };
 
@@ -101,11 +126,12 @@ export const Main: FunctionComponent = ({ children }) => {
 export const Content: FunctionComponent<PageHeaderProps> = ({
   heading,
   breadcrumbs,
+  controls,
   children,
 }) => {
   return (
     <>
-      <PageHeader {...{ heading, breadcrumbs }} />
+      <PageHeader {...{ heading, breadcrumbs, controls }} />
       <Main>{children}</Main>
     </>
   );
