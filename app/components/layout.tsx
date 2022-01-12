@@ -85,7 +85,7 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
         </div>
         <h1 className="text-4xl">{heading}</h1>
       </div>
-      <div className="flex-initial">{controls}</div>
+      <div className="flex-initial flex space-x-2">{controls}</div>
     </div>
   );
 };
@@ -107,6 +107,22 @@ export const HeaderLinkButton: FunctionComponent<HeaderLinkButtonProps> = ({
     >
       {children}
     </Link>
+  );
+};
+interface HeaderButtonProps {
+  title: string;
+}
+export const HeaderButton: FunctionComponent<HeaderButtonProps> = ({
+  title,
+  children,
+}) => {
+  return (
+    <button
+      title={title}
+      className="flex items-center h-10 px-4 white border border-white border-r"
+    >
+      {children}
+    </button>
   );
 };
 

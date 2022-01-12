@@ -43,7 +43,7 @@ interface Props {
     campaignId: string;
   };
 }
-export default function ViewCampaign({ params }: Props) {
+export default function NounsList({ params }: Props) {
   const { nounType, nounsOfType, campaign } = useLoaderData<LoaderData>();
 
   return (

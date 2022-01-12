@@ -22,7 +22,7 @@ interface Props {
     campaignId: string;
   };
 }
-export default function ViewCampaign({ params }: Props) {
+export default function ViewSession({ params }: Props) {
   const { session, campaign } = useLoaderData<LoaderData>();
 
   return (

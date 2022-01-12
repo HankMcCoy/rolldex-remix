@@ -1,5 +1,4 @@
-import { HeaderLinkButton, Content } from "~/components/layout";
-import { Markdown } from "~/components/markdown";
+import { HeaderLinkButton, Content, HeaderButton } from "~/components/layout";
 import {
   campaignsById,
   Noun,
@@ -9,7 +8,8 @@ import {
   nounsById,
 } from "~/fake-data";
 import { LoaderFunction, useLoaderData } from "remix";
-import { TitledSection } from "~/components/titled-section";
+import { TextField, TextareaField } from "~/components/forms";
+import { CmdCtrlKey } from "~/util";
 
 type LoaderData = {
   noun: Noun;
@@ -28,7 +28,7 @@ interface Props {
     campaignId: string;
   };
 }
-export default function ViewCampaign({ params }: Props) {
+export default function EditNoun({ params }: Props) {
   const { noun, campaign } = useLoaderData<LoaderData>();
 
   return (
@@ -45,24 +45,40 @@ export default function ViewCampaign({ params }: Props) {
         },
       ]}
       controls={
-        <HeaderLinkButton
-          to={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
-          data-id="edit"
-          title="Edit (Ctrl/Cmd-E)"
-        >
-          Edit
-        </HeaderLinkButton>
+        <>
+          <HeaderLinkButton
+            to={`/campaigns/${campaign.id}/nouns/${noun.id}`}
+            data-id="cancel"
+            title={`Cancel (${CmdCtrlKey}-E)`}
+          >
+            Cancel
+          </HeaderLinkButton>
+          <HeaderButton data-id="save" title={`Save (${CmdCtrlKey}-S)`}>
+            Save
+          </HeaderButton>
+        </>
       }
     >
       <div className="flex space-x-6">
         <div className="flex-1 flex flex-col space-y-6">
-          <TitledSection title="Summary">{noun.summary}</TitledSection>
-          <TitledSection title="Notes">
-            <Markdown>{noun.notes}</Markdown>
-          </TitledSection>
-          <TitledSection title="Private Notes">
-            <Markdown>{noun.private_notes}</Markdown>
-          </TitledSection>
+          <form
+            method="post"
+            action={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
+            className="max-w-md space-y-2"
+          >
+            <TextField label="Name:" defaultValue={noun.name} />
+            <TextareaField
+              label="Summary:"
+              defaultValue={noun.summary}
+              rows={3}
+            />
+            <TextareaField label="Notes:" defaultValue={noun.notes} rows={6} />
+            <TextareaField
+              label="Private Notes:"
+              defaultValue={noun.private_notes}
+              rows={6}
+            />
+          </form>
         </div>
       </div>
     </Content>
