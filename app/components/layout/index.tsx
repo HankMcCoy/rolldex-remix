@@ -4,6 +4,8 @@ import { classNames } from "~/util";
 import { Link } from "remix";
 import { useLocation } from "react-router-dom";
 
+export { HeaderLinkButton, HeaderButton } from "./header-button";
+
 const navigation = [
   { name: "Campaigns", href: "/campaigns", icon: UserGroupIcon },
   { name: "Systems", href: "/systems", icon: BookOpenIcon },
@@ -87,42 +89,6 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
       </div>
       <div className="flex-initial flex space-x-2">{controls}</div>
     </div>
-  );
-};
-
-interface HeaderLinkButtonProps {
-  to: string;
-  title: string;
-}
-export const HeaderLinkButton: FunctionComponent<HeaderLinkButtonProps> = ({
-  to,
-  title,
-  children,
-}) => {
-  return (
-    <Link
-      to={to}
-      title={title}
-      className="flex items-center h-10 px-4 white border border-white border-r"
-    >
-      {children}
-    </Link>
-  );
-};
-interface HeaderButtonProps {
-  title: string;
-}
-export const HeaderButton: FunctionComponent<HeaderButtonProps> = ({
-  title,
-  children,
-}) => {
-  return (
-    <button
-      title={title}
-      className="flex items-center h-10 px-4 white border border-white border-r"
-    >
-      {children}
-    </button>
   );
 };
 

@@ -18,18 +18,6 @@ import {
 import { TextField, TextareaField } from "~/components/forms";
 import { CmdCtrlKey } from "~/util";
 
-type LoaderData = {
-  noun: Noun;
-  campaign: Campaign;
-};
-export let loader: LoaderFunction = ({ params }) => {
-  const { nounId, campaignId } = params;
-  if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
-  const noun = nounsById[nounId];
-  const campaign = campaignsById[campaignId];
-  return { noun, campaign };
-};
-
 interface Props {
   params: {
     campaignId: string;
@@ -61,7 +49,11 @@ export default function EditNoun({ params }: Props) {
           >
             Cancel
           </HeaderLinkButton>
-          <HeaderButton data-id="save" title={`Save (${CmdCtrlKey}-S)`}>
+          <HeaderButton
+            data-id="save"
+            title={`Save (${CmdCtrlKey}-S)`}
+            type="primary"
+          >
             Save
           </HeaderButton>
         </>
@@ -100,6 +92,18 @@ export default function EditNoun({ params }: Props) {
     </Content>
   );
 }
+
+type LoaderData = {
+  noun: Noun;
+  campaign: Campaign;
+};
+export let loader: LoaderFunction = ({ params }) => {
+  const { nounId, campaignId } = params;
+  if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
+  const noun = nounsById[nounId];
+  const campaign = campaignsById[campaignId];
+  return { noun, campaign };
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();

@@ -49,6 +49,7 @@ export default function ViewNoun({ params }: Props) {
           to={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
           data-id="edit"
           title="Edit (Ctrl/Cmd-E)"
+          type="primary"
         >
           Edit
         </HeaderLinkButton>
