@@ -1,5 +1,22 @@
 import React, { FunctionComponent } from "react";
 
+interface LabelRowProps {
+  label: string;
+  title?: string;
+}
+export const LabelRow: FunctionComponent<LabelRowProps> = ({
+  label,
+  title,
+  children,
+}) => (
+  <p>
+    <label title={title ?? label}>
+      <span className="block text-lg font-serif">{label}</span>
+      {children}
+    </label>
+  </p>
+);
+
 interface TextFieldProps {
   label: string;
   title?: string;
@@ -11,17 +28,14 @@ export const TextField: FunctionComponent<TextFieldProps> = ({
   defaultValue,
 }) => {
   return (
-    <p>
-      <label title={title ?? label}>
-        <span className="block text-lg font-serif">{label}</span>
-        <input
-          type="text"
-          name="name"
-          defaultValue={defaultValue}
-          className="w-full"
-        />
-      </label>
-    </p>
+    <LabelRow label={label} title={title}>
+      <input
+        type="text"
+        name="name"
+        defaultValue={defaultValue}
+        className="w-full"
+      />
+    </LabelRow>
   );
 };
 
@@ -38,16 +52,13 @@ export const TextareaField: FunctionComponent<TextareaFieldProps> = ({
   defaultValue,
 }) => {
   return (
-    <p>
-      <label title={title ?? label}>
-        <span className="block text-lg font-serif">{label}</span>
-        <textarea
-          name="name"
-          defaultValue={defaultValue}
-          rows={rows}
-          className="w-full"
-        />
-      </label>
-    </p>
+    <LabelRow label={label} title={title}>
+      <textarea
+        name="name"
+        defaultValue={defaultValue}
+        rows={rows}
+        className="w-full"
+      />
+    </LabelRow>
   );
 };

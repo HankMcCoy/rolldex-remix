@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  email     String   @unique
+
+  campaigns Campaign[]
+  members   Member[]
+}
+
+model Campaign {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  name        String
+  summary     String
+
+  createdBy User      @relation(fields: [createdById], references: [id])
+  sessions  Session[]
+  nouns     Noun[]
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  campaignId   String
+  name         String
+  summary      String
+  notes        String
+  privateNotes String
+  nounType     String
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+}
+
+model Noun {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  campaignId   String
+  name         String
+  summary      String
+  notes        String
+  privateNotes String
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+}
+
+model Member {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  campaignId String
+  email      String   @unique
+  memberType String
+  userId     String?
+
+  user User? @relation(fields: [userId], references: [id])
+}
