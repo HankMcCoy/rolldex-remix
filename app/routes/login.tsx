@@ -30,5 +30,5 @@ export const action: ActionFunction = async ({ request }) => {
   if (!user) {
     user = await db.user.create({ data: { email } });
   }
-  return createUserSession(email, "/campaigns");
+  return createUserSession(user.id, "/campaigns");
 };

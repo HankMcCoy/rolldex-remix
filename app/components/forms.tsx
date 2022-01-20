@@ -19,19 +19,21 @@ export const LabelRow: FunctionComponent<LabelRowProps> = ({
 
 interface TextFieldProps {
   label: string;
+  name: string;
   title?: string;
   defaultValue?: string;
 }
 export const TextField: FunctionComponent<TextFieldProps> = ({
   label,
   title,
+  name,
   defaultValue,
 }) => {
   return (
     <LabelRow label={label} title={title}>
       <input
         type="text"
-        name="name"
+        name={name}
         defaultValue={defaultValue}
         className="w-full"
       />
@@ -41,12 +43,14 @@ export const TextField: FunctionComponent<TextFieldProps> = ({
 
 interface TextareaFieldProps {
   label: string;
+  name: string;
   title?: string;
   defaultValue?: string;
   rows?: number;
 }
 export const TextareaField: FunctionComponent<TextareaFieldProps> = ({
   label,
+  name,
   title,
   rows,
   defaultValue,
@@ -54,7 +58,7 @@ export const TextareaField: FunctionComponent<TextareaFieldProps> = ({
   return (
     <LabelRow label={label} title={title}>
       <textarea
-        name="name"
+        name={name}
         defaultValue={defaultValue}
         rows={rows}
         className="w-full"

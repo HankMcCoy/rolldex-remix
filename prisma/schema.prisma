@@ -41,7 +41,6 @@ model Session {
   summary      String
   notes        String
   privateNotes String
-  nounType     String
 
   campaign Campaign @relation(fields: [campaignId], references: [id])
 }
@@ -55,6 +54,7 @@ model Noun {
   summary      String
   notes        String
   privateNotes String
+  nounType String
 
   campaign Campaign @relation(fields: [campaignId], references: [id])
 }

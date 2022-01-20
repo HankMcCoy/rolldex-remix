@@ -31,6 +31,7 @@ export function getUserSession(request: Request) {
 
 export async function getUserId(request: Request) {
   const session = await getUserSession(request);
+  console.log(session);
   const userId = session.get("userId");
 
   if (!userId || typeof userId !== "string") return null;

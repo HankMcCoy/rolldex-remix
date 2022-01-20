@@ -3,31 +3,64 @@ import { Content } from "~/components/layout";
 import { LinkBox } from "~/components/link-box";
 import { TitledSection } from "~/components/titled-section";
 import { AddableList } from "~/components/addable-list";
-import {
-  campaignsById,
-  sessions,
-  members,
-  nouns,
-  Noun,
-  Campaign,
-} from "~/fake-data";
-import { LoaderFunction, useLoaderData } from "remix";
 
-const people = nouns.filter((n) => n.noun_type === "PERSON");
-const places = nouns.filter((n) => n.noun_type === "PLACE");
-const things = nouns.filter((n) => n.noun_type === "THING");
-const factions = nouns.filter((n) => n.noun_type === "FACTION");
+import { LoaderFunction, useLoaderData } from "remix";
+import { Campaign, Noun, Member, Session } from ".prisma/client";
+import { db } from "~/db.server";
 
 type LoaderData = {
-  campaign: Campaign;
   id: string;
+  campaign: Campaign;
+  people: Array<Noun>;
+  places: Array<Noun>;
+  things: Array<Noun>;
+  factions: Array<Noun>;
+  members: Array<Member>;
+  sessions: Array<Session>;
 };
-export let loader: LoaderFunction = ({ params }) => {
+export let loader: LoaderFunction = async ({ params }): Promise<LoaderData> => {
+  console.log("PARAMS", params);
   const { campaignId } = params;
-  if (!campaignId) throw new Error("campaignId required");
-  const campaign = campaignsById[campaignId];
-  const result: LoaderData = { campaign, id: campaignId };
-  return result;
+  if (!campaignId) throw new Response("Bad Request", { status: 400 });
+
+  const [campaign, people, places, things, factions, sessions, members] =
+    await Promise.all([
+      db.campaign.findUnique({ where: { id: campaignId } }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "PERSON" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "PLACE" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "THING" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "FACTION" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.session.findMany({ where: { campaignId } }),
+      db.member.findMany({ where: { campaignId } }),
+    ]);
+  if (!campaign) throw new Response("Not Found", { status: 404 });
+
+  return {
+    campaign,
+    id: campaignId,
+    people,
+    places,
+    things,
+    factions,
+    sessions,
+    members,
+  };
 };
 
 interface Props {
@@ -36,7 +69,8 @@ interface Props {
   };
 }
 export default function ViewCampaign({ params }: Props) {
-  const { campaign, id } = useLoaderData<LoaderData>();
+  const { campaign, id, people, places, things, factions, sessions, members } =
+    useLoaderData<LoaderData>();
   const getNounEl = useCallback(
     (n: Noun) => (
       <LinkBox
@@ -55,9 +89,7 @@ export default function ViewCampaign({ params }: Props) {
     >
       <div className="flex space-x-6">
         <div className="flex-1 flex flex-col space-y-6">
-          <TitledSection title="Description">
-            {campaign.description}
-          </TitledSection>
+          <TitledSection title="Description">{campaign.summary}</TitledSection>
           <TitledSection title="Members">
             <div className="flex flex-col space-y-2">
               {members.map((m) => (
