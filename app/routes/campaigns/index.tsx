@@ -1,6 +1,6 @@
 import { Campaign } from ".prisma/client";
-import { Link, useLoaderData } from "remix";
-import { Content } from "~/components/layout";
+import { useLoaderData } from "remix";
+import { Content, LinkButton } from "~/components/layout";
 import { LinkBox } from "~/components/link-box";
 import { db } from "~/db.server";
 
@@ -18,10 +18,15 @@ export default function CampaignsList() {
     <>
       <Content
         heading="Campaigns"
-        controls={<Link to="/campaigns/add">Add</Link>}
+        controls={
+          <LinkButton to="/campaigns/add" title="Add a new campaign">
+            Add
+          </LinkButton>
+        }
       >
         {campaigns.map((c) => (
           <LinkBox
+            key={c.id}
             title={c.name}
             desc={c.summary}
             href={`/campaigns/${c.id}`}

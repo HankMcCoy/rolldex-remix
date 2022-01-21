@@ -1,4 +1,4 @@
-import { HeaderLinkButton, Content } from "~/components/layout";
+import { LinkButton, Content } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
 import {
   campaignsById,
@@ -45,14 +45,14 @@ export default function ViewNoun({ params }: Props) {
         },
       ]}
       controls={
-        <HeaderLinkButton
+        <LinkButton
           to={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
           data-id="edit"
           title="Edit (Ctrl/Cmd-E)"
           type="primary"
         >
           Edit
-        </HeaderLinkButton>
+        </LinkButton>
       }
     >
       <div className="flex space-x-6">

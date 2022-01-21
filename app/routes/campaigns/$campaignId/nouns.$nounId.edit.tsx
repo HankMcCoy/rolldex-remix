@@ -1,4 +1,4 @@
-import { HeaderLinkButton, Content, HeaderButton } from "~/components/layout";
+import { LinkButton, Content, Button } from "~/components/layout";
 import {
   campaignsById,
   Noun,
@@ -42,20 +42,20 @@ export default function EditNoun({ params }: Props) {
       ]}
       controls={
         <>
-          <HeaderLinkButton
+          <LinkButton
             to={`/campaigns/${campaign.id}/nouns/${noun.id}`}
             data-id="cancel"
             title={`Cancel (${CmdCtrlKey}-E)`}
           >
             Cancel
-          </HeaderLinkButton>
-          <HeaderButton
+          </LinkButton>
+          <Button
             data-id="save"
             title={`Save (${CmdCtrlKey}-S)`}
             type="primary"
           >
             Save
-          </HeaderButton>
+          </Button>
         </>
       }
     >
@@ -69,18 +69,21 @@ export default function EditNoun({ params }: Props) {
             <fieldset disabled={transition.state === "submitting"}>
               <input type="hidden" name="campaignId" value={campaign.id} />
               <input type="hidden" name="nounId" value={noun.id} />
-              <TextField label="Name:" defaultValue={noun.name} />
+              <TextField name="name" label="Name:" defaultValue={noun.name} />
               <TextareaField
+                name="summary"
                 label="Summary:"
                 defaultValue={noun.summary}
                 rows={3}
               />
               <TextareaField
+                name="notes"
                 label="Notes:"
                 defaultValue={noun.notes}
                 rows={6}
               />
               <TextareaField
+                name="privateNotes"
                 label="Private Notes:"
                 defaultValue={noun.private_notes}
                 rows={6}

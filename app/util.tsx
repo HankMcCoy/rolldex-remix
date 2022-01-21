@@ -1,3 +1,6 @@
+import { useEffect, useRef, MutableRefObject } from "react";
+import isHotkey from "is-hotkey";
+
 export const classNames = (...classes: Array<string | undefined>) =>
   classes.filter(Boolean).join(" ");
 
@@ -14,4 +17,27 @@ export function asString<T>(value: T | string): string {
       value
     )} to be a string, but instead was type '${typeof value}'`
   );
+}
+
+export function useShortcut<T extends HTMLElement>(
+  shortcut: string | undefined
+): MutableRefObject<T | null> {
+  const clickerRef = useRef<T>(null);
+  useEffect(() => {
+    if (!shortcut) return;
+
+    const checkHotkey = isHotkey(shortcut);
+    const listener = (e: KeyboardEvent) => {
+      if (!clickerRef.current) throw new Error("Broken clicker ref");
+
+      if (checkHotkey(e)) {
+        e.preventDefault();
+        clickerRef.current.click();
+      }
+    };
+    window.addEventListener("keydown", listener);
+
+    return () => window.removeEventListener("keydown", listener);
+  }, [shortcut]);
+  return clickerRef;
 }

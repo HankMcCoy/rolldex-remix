@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Content } from "~/components/layout";
+import { Content, LinkButton } from "~/components/layout";
 import { LinkBox } from "~/components/link-box";
 import { TitledSection } from "~/components/titled-section";
 import { AddableList } from "~/components/addable-list";
@@ -85,6 +85,15 @@ export default function ViewCampaign({ params }: Props) {
     <Content
       heading={campaign.name}
       breadcrumbs={[{ text: "Campaigns", href: "/campaigns" }]}
+      controls={
+        <LinkButton
+          to={`/campaigns/${id}/edit`}
+          title={"Edit this campaign"}
+          shortcut="mod+e"
+        >
+          Edit
+        </LinkButton>
+      }
     >
       <div className="flex space-x-6">
         <div className="flex-1 flex flex-col space-y-6">
