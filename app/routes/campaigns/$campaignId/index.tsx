@@ -19,7 +19,6 @@ type LoaderData = {
   sessions: Array<Session>;
 };
 export let loader: LoaderFunction = async ({ params }): Promise<LoaderData> => {
-  console.log("PARAMS", params);
   const { campaignId } = params;
   if (!campaignId) throw new Response("Bad Request", { status: 400 });
 
@@ -89,7 +88,7 @@ export default function ViewCampaign({ params }: Props) {
     >
       <div className="flex space-x-6">
         <div className="flex-1 flex flex-col space-y-6">
-          <TitledSection title="Description">{campaign.summary}</TitledSection>
+          <TitledSection title="Summary">{campaign.summary}</TitledSection>
           <TitledSection title="Members">
             <div className="flex flex-col space-y-2">
               {members.map((m) => (

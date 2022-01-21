@@ -48,7 +48,6 @@ export const action: ActionFunction = async ({ request }) => {
   if (userId === null) throw new Error("Uh oh, 401");
   const name = asString(body.get("name"));
   const summary = asString(body.get("summary"));
-  console.log("USER ID", userId);
   const newCampaign = await db.campaign.create({
     data: { name, summary, createdById: userId },
   });
