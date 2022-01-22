@@ -38,7 +38,7 @@ export default function EditCampaign() {
 export const action: ActionFunction = async ({ request }) => {
   const {
     fields: { id, name, summary },
-  } = await getFormFields({ request, fieldNames: ["id", "name", "summary"] });
+  } = await getFormFields({ request });
 
   await db.campaign.update({
     where: { id },

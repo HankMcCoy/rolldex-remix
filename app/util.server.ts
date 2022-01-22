@@ -3,22 +3,18 @@ import { getUserId } from "./session.server";
 
 type GetFormFieldsArgs = {
   request: Request;
-  fieldNames: Array<string>;
 };
-export const getFormFields = async ({
-  request,
-  fieldNames,
-}: GetFormFieldsArgs) => {
-  const [body, userId] = await Promise.all([
+export const getFormFields = async ({ request }: GetFormFieldsArgs) => {
+  const [formData, userId] = await Promise.all([
     request.formData(),
     getUserId(request),
   ]);
   if (userId === null) throw new Error("Uh oh, 401");
 
-  const fields = fieldNames.reduce(
+  const fields = [...formData.keys()].reduce(
     (obj, field) => ({
       ...obj,
-      [field]: asString(body.get(field)),
+      [field]: asString(formData.get(field)),
     }),
     {} as { [k: string]: string }
   );

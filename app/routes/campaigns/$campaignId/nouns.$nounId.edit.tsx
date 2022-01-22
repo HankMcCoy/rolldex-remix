@@ -1,22 +1,10 @@
-import { LinkButton, Content, Button } from "~/components/layout";
-import {
-  campaignsById,
-  Noun,
-  nounTypePluralDisplayText,
-  nounTypeUrlFragment,
-  Campaign,
-  nounsById,
-} from "~/fake-data";
-import {
-  LoaderFunction,
-  ActionFunction,
-  useLoaderData,
-  useTransition,
-  redirect,
-  Form,
-} from "remix";
+import { FormPage } from "~/components/layout";
+import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
+import { LoaderFunction, ActionFunction, useLoaderData, redirect } from "remix";
 import { TextField, TextareaField } from "~/components/forms";
-import { CmdCtrlKey } from "~/util";
+import { Campaign, Noun } from "@prisma/client";
+import { db } from "~/db.server";
+import { getFormFields } from "~/util.server";
 
 interface Props {
   params: {
@@ -25,74 +13,45 @@ interface Props {
 }
 export default function EditNoun({ params }: Props) {
   const { noun, campaign } = useLoaderData<LoaderData>();
-  const transition = useTransition();
 
   return (
-    <Content
+    <FormPage
       heading={noun.name}
+      formId="add-noun-form"
       breadcrumbs={[
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
         {
-          text: nounTypePluralDisplayText[noun.noun_type],
+          text: nounTypePluralDisplayText[noun.nounType],
           href: `/campaigns/${campaign.id}/nouns?nounType=${
-            nounTypeUrlFragment[noun.noun_type]
+            nounTypeUrlFragment[noun.nounType]
           }`,
         },
       ]}
-      controls={
-        <>
-          <LinkButton
-            to={`/campaigns/${campaign.id}/nouns/${noun.id}`}
-            data-id="cancel"
-            title={`Cancel (${CmdCtrlKey}-E)`}
-          >
-            Cancel
-          </LinkButton>
-          <Button
-            data-id="save"
-            title={`Save (${CmdCtrlKey}-S)`}
-            type="primary"
-          >
-            Save
-          </Button>
-        </>
-      }
+      backHref={`/campaigns/${campaign.id}/nouns/${noun.id}`}
     >
-      <div className="flex space-x-6">
-        <div className="flex-1 flex flex-col space-y-6">
-          <Form
-            method="post"
-            action={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
-            className="max-w-md space-y-2"
-          >
-            <fieldset disabled={transition.state === "submitting"}>
-              <input type="hidden" name="campaignId" value={campaign.id} />
-              <input type="hidden" name="nounId" value={noun.id} />
-              <TextField name="name" label="Name:" defaultValue={noun.name} />
-              <TextareaField
-                name="summary"
-                label="Summary:"
-                defaultValue={noun.summary}
-                rows={3}
-              />
-              <TextareaField
-                name="notes"
-                label="Notes:"
-                defaultValue={noun.notes}
-                rows={6}
-              />
-              <TextareaField
-                name="privateNotes"
-                label="Private Notes:"
-                defaultValue={noun.private_notes}
-                rows={6}
-              />
-            </fieldset>
-          </Form>
-        </div>
-      </div>
-    </Content>
+      <input type="hidden" name="campaignId" value={campaign.id} />
+      <input type="hidden" name="nounId" value={noun.id} />
+      <TextField name="name" label="Name:" defaultValue={noun.name} />
+      <TextareaField
+        name="summary"
+        label="Summary:"
+        defaultValue={noun.summary}
+        rows={3}
+      />
+      <TextareaField
+        name="notes"
+        label="Notes:"
+        defaultValue={noun.notes}
+        rows={6}
+      />
+      <TextareaField
+        name="privateNotes"
+        label="Private Notes:"
+        defaultValue={noun.privateNotes}
+        rows={6}
+      />
+    </FormPage>
   );
 }
 
@@ -100,17 +59,25 @@ type LoaderData = {
   noun: Noun;
   campaign: Campaign;
 };
-export let loader: LoaderFunction = ({ params }) => {
+export let loader: LoaderFunction = async ({ params }) => {
   const { nounId, campaignId } = params;
   if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
-  const noun = nounsById[nounId];
-  const campaign = campaignsById[campaignId];
+  const [campaign, noun] = await Promise.all([
+    db.campaign.findUnique({ where: { id: campaignId } }),
+    db.noun.findUnique({ where: { id: nounId } }),
+  ]);
   return { noun, campaign };
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  const body = await request.formData();
-  const campaignId = body.get("campaignId");
-  const nounId = body.get("nounId");
+  const {
+    fields: { campaignId, nounId, name, summary, notes, privateNotes },
+  } = await getFormFields({ request });
+
+  await db.noun.update({
+    where: { id: nounId },
+    data: { name, summary, notes, privateNotes },
+  });
+
   return redirect(`/campaigns/${campaignId}/nouns/${nounId}`);
 };

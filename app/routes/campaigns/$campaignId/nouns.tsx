@@ -1,11 +1,6 @@
 import { Content } from "~/components/layout";
 import {
-  campaignsById,
-  nouns,
-  Noun,
-  NounType,
   nounTypePluralDisplayText,
-  Campaign,
   getNounTypeFromUrlFragment,
   nounTypeUrlFragment,
 } from "~/fake-data";
@@ -13,13 +8,15 @@ import { Link, LoaderFunction, useLoaderData } from "remix";
 import { AddableList } from "~/components/addable-list";
 import { useCallback } from "react";
 import { LinkBox, linkBoxFrameClasses } from "~/components/link-box";
+import { Campaign, Noun } from "@prisma/client";
+import { db } from "~/db.server";
 
 type LoaderData = {
-  nounType: NounType;
+  nounType: string;
   nounsOfType: Array<Noun>;
   campaign: Campaign;
 };
-export let loader: LoaderFunction = ({ request, params }) => {
+export let loader: LoaderFunction = async ({ request, params }) => {
   const { campaignId } = params;
   const nounType = getNounTypeFromUrlFragment(
     new URL(request.url).searchParams.get("nounType")
@@ -31,10 +28,11 @@ export let loader: LoaderFunction = ({ request, params }) => {
         campaignId,
       })}`
     );
-  const campaign = campaignsById[campaignId];
-  const nounsOfType = nouns
-    .filter((n) => n.noun_type === nounType)
-    .sort((a, b) => (a.name > b.name ? 1 : -1));
+  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
+  const nounsOfType = await db.noun.findMany({
+    where: { nounType },
+    orderBy: { name: "asc" },
+  });
   return { nounType, nounsOfType, campaign };
 };
 

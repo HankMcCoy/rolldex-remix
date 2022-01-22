@@ -25,7 +25,6 @@ export const action: ActionFunction = async ({ request }) => {
     fields: { name, summary },
   } = await getFormFields({
     request,
-    fieldNames: ["name", "summary"],
   });
   const newCampaign = await db.campaign.create({
     data: { name, summary, createdById: userId },

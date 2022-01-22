@@ -94,19 +94,19 @@ export type DraftNoun = $Diff<
 export const nouns = nounsRaw as Array<Noun>;
 export const nounsById = indexBy(nouns, "id");
 
-export const nounTypePluralDisplayText = {
+export const nounTypePluralDisplayText: Record<string, string> = {
   PERSON: "People",
   PLACE: "Places",
   THING: "Things",
   FACTION: "Factions",
 };
-export const nounTypeSingularDisplayText = {
+export const nounTypeSingularDisplayText: Record<string, string> = {
   PERSON: "Person",
   PLACE: "Place",
   THING: "Thing",
   FACTION: "Faction",
 };
-export const nounTypeUrlFragment = {
+export const nounTypeUrlFragment: Record<string, string> = {
   PERSON: "people",
   PLACE: "places",
   THING: "things",

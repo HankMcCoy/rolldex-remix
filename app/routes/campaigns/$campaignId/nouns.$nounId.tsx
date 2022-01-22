@@ -1,25 +1,24 @@
 import { LinkButton, Content } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
-import {
-  campaignsById,
-  Noun,
-  nounTypePluralDisplayText,
-  nounTypeUrlFragment,
-  Campaign,
-  nounsById,
-} from "~/fake-data";
+import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
 import { LoaderFunction, useLoaderData } from "remix";
 import { TitledSection } from "~/components/titled-section";
+import { Campaign, Noun } from "@prisma/client";
+import { db } from "~/db.server";
 
 type LoaderData = {
   noun: Noun;
   campaign: Campaign;
 };
-export let loader: LoaderFunction = ({ params }) => {
+export let loader: LoaderFunction = async ({ params }) => {
   const { nounId, campaignId } = params;
   if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
-  const noun = nounsById[nounId];
-  const campaign = campaignsById[campaignId];
+
+  const [noun, campaign] = await Promise.all([
+    db.noun.findUnique({ where: { id: nounId } }),
+    db.campaign.findUnique({ where: { id: campaignId } }),
+  ]);
+
   return { noun, campaign };
 };
 
@@ -38,9 +37,9 @@ export default function ViewNoun({ params }: Props) {
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
         {
-          text: nounTypePluralDisplayText[noun.noun_type],
+          text: nounTypePluralDisplayText[noun.nounType],
           href: `/campaigns/${campaign.id}/nouns?nounType=${
-            nounTypeUrlFragment[noun.noun_type]
+            nounTypeUrlFragment[noun.nounType]
           }`,
         },
       ]}
@@ -62,7 +61,7 @@ export default function ViewNoun({ params }: Props) {
             <Markdown>{noun.notes}</Markdown>
           </TitledSection>
           <TitledSection title="Private Notes">
-            <Markdown>{noun.private_notes}</Markdown>
+            <Markdown>{noun.privateNotes}</Markdown>
           </TitledSection>
         </div>
       </div>
