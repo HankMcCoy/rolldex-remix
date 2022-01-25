@@ -27,7 +27,6 @@ export default function EditNoun({ params }: Props) {
           href: `/campaigns/${campaign.id}/nouns?nounType=${nounTypeUrl}`,
         },
       ]}
-      backHref={`/campaigns/${campaign.id}/nouns/${noun.id}`}
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
       <input type="hidden" name="nounId" value={noun.id} />

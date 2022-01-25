@@ -1,16 +1,19 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, ReactNode } from "react";
 import { Heading } from "~/components/text";
 interface Props {
   title: string;
+  controls?: ReactNode;
 }
 export const TitledSection: FunctionComponent<Props> = ({
   title,
+  controls,
   children,
 }) => (
   <div>
-    <Heading l={2} className="mb-2">
-      {title}
-    </Heading>
+    <div className="flex justify-between items-center mb-2">
+      <Heading l={2}>{title}</Heading>
+      {controls}
+    </div>
     {children}
   </div>
 );

@@ -18,11 +18,7 @@ export default function EditCampaign() {
   const { campaign } = useLoaderData<LoaderData>();
 
   return (
-    <FormPage
-      heading={`Edit ${campaign.name}`}
-      backHref={`/campaigns/${campaign.id}`}
-      formId="edit-campaign-form"
-    >
+    <FormPage heading={`Edit ${campaign.name}`} formId="edit-campaign-form">
       <input type="hidden" name="id" value={campaign.id} />
       <TextField label="Name:" name="name" defaultValue={campaign.name} />
       <TextareaField

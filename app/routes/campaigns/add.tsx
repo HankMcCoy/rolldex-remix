@@ -8,11 +8,7 @@ export default function AddCampaign() {
   const transition = useTransition();
 
   return (
-    <FormPage
-      heading="New Campaign"
-      formId="new-campaign-form"
-      backHref="/campaigns"
-    >
+    <FormPage heading="New Campaign" formId="new-campaign-form">
       <TextField label="Name:" name="name" />
       <TextareaField label="Summary:" name="summary" rows={3} />
     </FormPage>

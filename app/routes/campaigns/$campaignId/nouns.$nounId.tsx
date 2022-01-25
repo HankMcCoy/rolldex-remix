@@ -49,7 +49,7 @@ export default function ViewNoun({ params }: Props) {
           data-id="edit"
           title="Edit (Ctrl/Cmd-E)"
           shortcut="mod+e"
-          type="primary"
+          style="darkPrimary"
         >
           Edit
         </LinkButton>

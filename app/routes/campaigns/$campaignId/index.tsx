@@ -91,6 +91,7 @@ export default function ViewCampaign({ params }: Props) {
           to={`/campaigns/${id}/edit`}
           title={"Edit this campaign"}
           shortcut="mod+e"
+          style="darkSecondary"
         >
           Edit
         </LinkButton>
@@ -122,24 +123,32 @@ export default function ViewCampaign({ params }: Props) {
         <div className="flex-1 flex flex-col space-y-6">
           <AddableList
             title="People"
+            addHref={`/campaigns/${id}/nouns/add?nounType=people`}
+            addTitle="Add person"
             seeAllHref={`/campaigns/${id}/nouns?nounType=people`}
             entities={people}
             getListItem={getNounEl}
           />
           <AddableList
             title="Factions"
+            addHref={`/campaigns/${id}/nouns/add?nounType=factions`}
+            addTitle="Add faction"
             seeAllHref={`/campaigns/${id}/nouns?nounType=factions`}
             entities={factions}
             getListItem={getNounEl}
           />
           <AddableList
             title="Places"
+            addHref={`/campaigns/${id}/nouns/add?nounType=places`}
+            addTitle="Add place"
             seeAllHref={`/campaigns/${id}/nouns?nounType=places`}
             entities={places}
             getListItem={getNounEl}
           />
           <AddableList
             title="Things"
+            addHref={`/campaigns/${id}/nouns/add?nounType=things`}
+            addTitle="Add thing"
             seeAllHref={`/campaigns/${id}/nouns?nounType=things`}
             entities={things}
             getListItem={getNounEl}

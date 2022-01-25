@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { Form, useTransition } from "remix";
+import { Form, useNavigate, useTransition } from "remix";
 import { CmdCtrlKey } from "~/util";
 import { Main, PageHeader } from "./basics";
 import { Button, LinkButton } from "./buttons";
@@ -8,33 +8,34 @@ interface FormPageProps {
   heading: string;
   breadcrumbs?: Array<{ text: string; href: string }>;
   formId: string;
-  backHref: string;
 }
 export const FormPage: FunctionComponent<FormPageProps> = ({
   heading,
   breadcrumbs,
   formId,
-  backHref,
   children,
 }) => {
   const transition = useTransition();
+  const navigate = useNavigate();
   return (
     <>
       <PageHeader
         {...{ heading, breadcrumbs }}
         controls={
           <>
-            <LinkButton
-              to={backHref}
+            <Button
               title={`Cancel (${CmdCtrlKey}-E)`}
               shortcut="mod+e"
+              onClick={() => navigate(-1)}
+              style="darkSecondary"
             >
               Cancel
-            </LinkButton>
+            </Button>
             <Button
               form={formId}
               title={`Save (${CmdCtrlKey}-S)`}
               shortcut="mod+s"
+              style="darkPrimary"
             >
               Save
             </Button>

@@ -22,7 +22,6 @@ export default function EditNoun({ params }: Props) {
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
       ]}
-      backHref={`/campaigns/${campaign.id}/nouns?nounType=${nounType}`}
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
       <TextField name="name" label="Name:" />
