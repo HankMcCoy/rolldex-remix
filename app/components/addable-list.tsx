@@ -6,7 +6,7 @@ interface Props<T> {
   title: string;
   seeAllHref: string;
   entities: Array<T>;
-  getListItem: (e: T) => JSX.Element;
+  getListItem: (e: T, i: number) => JSX.Element;
 }
 export const AddableList = <T extends unknown>({
   title,

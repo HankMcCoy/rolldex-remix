@@ -73,6 +73,7 @@ export default function ViewCampaign({ params }: Props) {
   const getNounEl = useCallback(
     (n: Noun) => (
       <LinkBox
+        key={n.id}
         title={n.name}
         desc={n.summary}
         href={`/campaigns/${id}/nouns/${n.id}`}
@@ -101,7 +102,7 @@ export default function ViewCampaign({ params }: Props) {
           <TitledSection title="Members">
             <div className="flex flex-col space-y-2">
               {members.map((m) => (
-                <LinkBox title={m.email} href="#" />
+                <LinkBox key={m.id} title={m.email} href="#" />
               ))}
             </div>
           </TitledSection>
@@ -109,6 +110,7 @@ export default function ViewCampaign({ params }: Props) {
             <div className="flex flex-col space-y-2">
               {sessions.map((s) => (
                 <LinkBox
+                  key={s.id}
                   title={s.name}
                   desc={s.summary}
                   href={`/campaigns/${id}/sessions/${s.id}`}

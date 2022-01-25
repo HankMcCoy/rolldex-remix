@@ -48,6 +48,7 @@ export default function ViewNoun({ params }: Props) {
           to={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
           data-id="edit"
           title="Edit (Ctrl/Cmd-E)"
+          shortcut="mod+e"
           type="primary"
         >
           Edit

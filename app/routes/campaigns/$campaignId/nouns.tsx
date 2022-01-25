@@ -5,9 +5,7 @@ import {
   nounTypeUrlFragment,
 } from "~/fake-data";
 import { Link, LoaderFunction, useLoaderData } from "remix";
-import { AddableList } from "~/components/addable-list";
-import { useCallback } from "react";
-import { LinkBox, linkBoxFrameClasses } from "~/components/link-box";
+import { LinkBox } from "~/components/link-box";
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
 
@@ -51,6 +49,13 @@ export default function NounsList({ params }: Props) {
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
       ]}
+      controls={
+        <Link
+          to={`/campaigns/${campaign.id}/nouns/add?nounType=${nounTypeUrlFragment[nounType]}`}
+        >
+          Add
+        </Link>
+      }
     >
       <div className="flex space-x-6">
         <div className="flex flex-col space-y-2">

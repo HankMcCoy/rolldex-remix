@@ -1,8 +1,8 @@
 import { FormPage } from "~/components/layout";
-import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
+import { getNounTypeFromUrlFragment, nounTypeUrlFragment } from "~/fake-data";
 import { LoaderFunction, ActionFunction, useLoaderData, redirect } from "remix";
 import { TextField, TextareaField, LabelRow } from "~/components/forms";
-import { Campaign, Noun } from "@prisma/client";
+import { Campaign } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
 
@@ -27,20 +27,17 @@ export default function EditNoun({ params }: Props) {
       <input type="hidden" name="campaignId" value={campaign.id} />
       <TextField name="name" label="Name:" />
       <LabelRow label="Noun Type">
-        <select name="nounType" className="w-full" required>
+        <select
+          name="nounType"
+          className="w-full"
+          required
+          defaultValue={getNounTypeFromUrlFragment(nounType)}
+        >
           <option></option>
-          <option value="PERSON" selected={nounType === "PERSON"}>
-            Person
-          </option>
-          <option value="PLACE" selected={nounType === "PLACE"}>
-            Place
-          </option>
-          <option value="THING" selected={nounType === "THING"}>
-            Thing
-          </option>
-          <option value="FACTION" selected={nounType === "FACTION"}>
-            Faction
-          </option>
+          <option value="PERSON">Person</option>
+          <option value="PLACE">Place</option>
+          <option value="THING">Thing</option>
+          <option value="FACTION">Faction</option>
         </select>
       </LabelRow>
       <TextareaField name="summary" label="Summary:" rows={3} />
@@ -51,7 +48,7 @@ export default function EditNoun({ params }: Props) {
 }
 
 type LoaderData = {
-  nounType: String;
+  nounType: string;
   campaign: Campaign;
 };
 export let loader: LoaderFunction = async ({ request, params }) => {
@@ -68,7 +65,6 @@ export const action: ActionFunction = async ({ request }) => {
   const { fields } = await getFormFields({
     request,
   });
-  console.log("FIELDS", fields);
   const noun = await db.noun.create({
     data: {
       campaignId: fields.campaignId,

@@ -1,7 +1,7 @@
 import { FormPage } from "~/components/layout";
 import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
 import { LoaderFunction, ActionFunction, useLoaderData, redirect } from "remix";
-import { TextField, TextareaField } from "~/components/forms";
+import { TextField, TextareaField, LabelRow } from "~/components/forms";
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
@@ -13,6 +13,7 @@ interface Props {
 }
 export default function EditNoun({ params }: Props) {
   const { noun, campaign } = useLoaderData<LoaderData>();
+  const nounTypeUrl = nounTypeUrlFragment[noun.nounType];
 
   return (
     <FormPage
@@ -23,9 +24,7 @@ export default function EditNoun({ params }: Props) {
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
         {
           text: nounTypePluralDisplayText[noun.nounType],
-          href: `/campaigns/${campaign.id}/nouns?nounType=${
-            nounTypeUrlFragment[noun.nounType]
-          }`,
+          href: `/campaigns/${campaign.id}/nouns?nounType=${nounTypeUrl}`,
         },
       ]}
       backHref={`/campaigns/${campaign.id}/nouns/${noun.id}`}
@@ -33,6 +32,20 @@ export default function EditNoun({ params }: Props) {
       <input type="hidden" name="campaignId" value={campaign.id} />
       <input type="hidden" name="nounId" value={noun.id} />
       <TextField name="name" label="Name:" defaultValue={noun.name} />
+      <LabelRow label="Noun Type">
+        <select
+          name="nounType"
+          className="w-full"
+          required
+          defaultValue={noun.nounType}
+        >
+          <option></option>
+          <option value="PERSON">Person</option>
+          <option value="PLACE">Place</option>
+          <option value="THING">Thing</option>
+          <option value="FACTION">Faction</option>
+        </select>
+      </LabelRow>
       <TextareaField
         name="summary"
         label="Summary:"
