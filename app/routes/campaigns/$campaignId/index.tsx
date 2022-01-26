@@ -78,6 +78,7 @@ export default function ViewCampaign({ params }: Props) {
         title={n.name}
         desc={n.summary}
         href={`/campaigns/${id}/nouns/${n.id}`}
+        deleteable
       />
     ),
     [id]

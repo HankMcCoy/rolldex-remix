@@ -1,7 +1,7 @@
 import { LinkButton, Content } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
 import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
-import { LoaderFunction, useLoaderData } from "remix";
+import { ActionFunction, LoaderFunction, redirect, useLoaderData } from "remix";
 import { TitledSection } from "~/components/titled-section";
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
@@ -22,6 +22,15 @@ export let loader: LoaderFunction = async ({ params }) => {
   return { noun, campaign };
 };
 
+export let action: ActionFunction = async ({ request, params }) => {
+  if (request.method === "DELETE") {
+    const { nounId, campaignId } = params;
+    await db.noun.delete({ where: { id: nounId } });
+    return redirect(`/campaigns/${campaignId}`);
+  }
+
+  throw new Error("Non-DELETE methods not implemented");
+};
 interface Props {
   params: {
     campaignId: string;
