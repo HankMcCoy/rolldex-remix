@@ -19,7 +19,11 @@ export default function CampaignsList() {
       <Content
         heading="Campaigns"
         controls={
-          <LinkButton to="/campaigns/add" title="Add a new campaign">
+          <LinkButton
+            to="/campaigns/add"
+            title="Add a new campaign"
+            style="darkSecondary"
+          >
             Add
           </LinkButton>
         }

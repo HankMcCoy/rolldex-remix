@@ -7,6 +7,7 @@ import { AddableList } from "~/components/addable-list";
 import { LoaderFunction, useLoaderData } from "remix";
 import { Campaign, Noun, Member, Session } from ".prisma/client";
 import { db } from "~/db.server";
+import { nounTypeUrlFragment } from "~/fake-data";
 
 type LoaderData = {
   id: string;
@@ -81,6 +82,17 @@ export default function ViewCampaign({ params }: Props) {
     ),
     [id]
   );
+  const getSessionEl = useCallback(
+    (s: Session) => (
+      <LinkBox
+        key={s.id}
+        title={s.name}
+        desc={s.summary}
+        href={`/campaigns/${id}/sessions/${s.id}`}
+      />
+    ),
+    [id]
+  );
 
   return (
     <Content
@@ -107,18 +119,13 @@ export default function ViewCampaign({ params }: Props) {
               ))}
             </div>
           </TitledSection>
-          <TitledSection title="Sessions">
-            <div className="flex flex-col space-y-2">
-              {sessions.map((s) => (
-                <LinkBox
-                  key={s.id}
-                  title={s.name}
-                  desc={s.summary}
-                  href={`/campaigns/${id}/sessions/${s.id}`}
-                />
-              ))}
-            </div>
-          </TitledSection>
+          <AddableList
+            title="Sessions"
+            addHref={`/campaigns/${id}/sessions/add`}
+            addTitle="Add session"
+            entities={sessions}
+            getListItem={getSessionEl}
+          />
         </div>
         <div className="flex-1 flex flex-col space-y-6">
           <AddableList

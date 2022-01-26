@@ -1,28 +1,28 @@
-import { Content } from "~/components/layout";
+import { Content, LinkButton } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
-import { campaignsById, Session, Campaign, sessionsById } from "~/fake-data";
 import { LoaderFunction, useLoaderData } from "remix";
 import { TitledSection } from "~/components/titled-section";
+import { db } from "~/db.server";
+import { Campaign, Session } from "@prisma/client";
 
 type LoaderData = {
   session: Session;
   campaign: Campaign;
 };
-export let loader: LoaderFunction = ({ params }) => {
+export let loader: LoaderFunction = async ({ params }) => {
   const { sessionId, campaignId } = params;
   if (!sessionId || !campaignId)
     throw new Error("nounId and campaignId required");
-  const session = sessionsById[sessionId];
-  const campaign = campaignsById[campaignId];
+
+  const [session, campaign] = await Promise.all([
+    db.session.findUnique({ where: { id: sessionId } }),
+    db.campaign.findUnique({ where: { id: campaignId } }),
+  ]);
+
   return { session, campaign };
 };
 
-interface Props {
-  params: {
-    campaignId: string;
-  };
-}
-export default function ViewSession({ params }: Props) {
+export default function ViewSession() {
   const { session, campaign } = useLoaderData<LoaderData>();
 
   return (
@@ -32,6 +32,17 @@ export default function ViewSession({ params }: Props) {
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
       ]}
+      controls={
+        <LinkButton
+          to={`/campaigns/${campaign.id}/sessions/${session.id}/edit`}
+          data-id="edit"
+          title="Edit (Ctrl/Cmd-E)"
+          shortcut="mod+e"
+          style="darkPrimary"
+        >
+          Edit
+        </LinkButton>
+      }
     >
       <div className="flex space-x-6">
         <div className="flex-1 flex flex-col space-y-6">
@@ -40,7 +51,7 @@ export default function ViewSession({ params }: Props) {
             <Markdown>{session.notes}</Markdown>
           </TitledSection>
           <TitledSection title="Private Notes">
-            <Markdown>{session.private_notes}</Markdown>
+            <Markdown>{session.privateNotes}</Markdown>
           </TitledSection>
         </div>
       </div>

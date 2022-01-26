@@ -7,16 +7,16 @@ interface Props<T> {
   title: string;
   addHref: string;
   addTitle: string;
-  seeAllHref: string;
   entities: Array<T>;
+  seeAllHref?: string;
   getListItem: (e: T, i: number) => JSX.Element;
 }
 export const AddableList = <T extends unknown>({
   title,
   addHref,
   addTitle,
-  seeAllHref,
   entities,
+  seeAllHref,
   getListItem,
 }: Props<T>) => {
   return (
@@ -35,12 +35,14 @@ export const AddableList = <T extends unknown>({
     >
       <div className="flex flex-col space-y-2">
         {entities.slice(0, 3).map(getListItem)}
-        <Link
-          to={seeAllHref}
-          className={`${linkBoxFrameClasses} py-1 text-center`}
-        >
-          See all
-        </Link>
+        {seeAllHref ? (
+          <Link
+            to={seeAllHref}
+            className={`${linkBoxFrameClasses} py-1 text-center`}
+          >
+            See all
+          </Link>
+        ) : null}
       </div>
     </TitledSection>
   );
