@@ -1,16 +1,17 @@
 import { FormPage } from "~/components/layout";
-import { LoaderFunction, ActionFunction, useLoaderData, redirect } from "remix";
-import { TextField, TextareaField, LabelRow } from "~/components/forms";
+import {
+  LoaderFunction,
+  ActionFunction,
+  useLoaderData,
+  redirect,
+  MetaFunction,
+} from "remix";
+import { TextField, TextareaField } from "~/components/forms";
 import { Campaign, Session } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
 
-interface Props {
-  params: {
-    campaignId: string;
-  };
-}
-export default function EditSession({ params }: Props) {
+export default function EditSession() {
   const { session, campaign } = useLoaderData<LoaderData>();
 
   return (
@@ -46,6 +47,14 @@ export default function EditSession({ params }: Props) {
     </FormPage>
   );
 }
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined;
+}) => ({
+  title: data ? `Edit ${data.session.name} - ${data.campaign.name}` : "",
+});
 
 type LoaderData = {
   session: Session;

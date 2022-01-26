@@ -12,6 +12,8 @@ export let loader = async () => {
   return { campaigns };
 };
 
+export const meta = () => ({ title: "Campaigns" });
+
 export default function CampaignsList() {
   const { campaigns } = useLoaderData<LoaderData>();
   return (

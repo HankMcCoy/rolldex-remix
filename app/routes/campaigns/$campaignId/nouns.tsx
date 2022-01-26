@@ -4,42 +4,12 @@ import {
   getNounTypeFromUrlFragment,
   nounTypeUrlFragment,
 } from "~/fake-data";
-import { Link, LoaderFunction, useLoaderData } from "remix";
+import { Link, LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { LinkBox } from "~/components/link-box";
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
 
-type LoaderData = {
-  nounType: string;
-  nounsOfType: Array<Noun>;
-  campaign: Campaign;
-};
-export let loader: LoaderFunction = async ({ request, params }) => {
-  const { campaignId } = params;
-  const nounType = getNounTypeFromUrlFragment(
-    new URL(request.url).searchParams.get("nounType")
-  );
-  if (!nounType || !campaignId)
-    throw new Error(
-      `nounType and campaignId required, ${JSON.stringify({
-        nounType,
-        campaignId,
-      })}`
-    );
-  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
-  const nounsOfType = await db.noun.findMany({
-    where: { nounType },
-    orderBy: { name: "asc" },
-  });
-  return { nounType, nounsOfType, campaign };
-};
-
-interface Props {
-  params: {
-    campaignId: string;
-  };
-}
-export default function NounsList({ params }: Props) {
+export default function NounsList() {
   const { nounType, nounsOfType, campaign } = useLoaderData<LoaderData>();
 
   return (
@@ -58,7 +28,7 @@ export default function NounsList({ params }: Props) {
       }
     >
       <div className="flex space-x-6">
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col space-y-2 w-full">
           {nounsOfType.map((n) => (
             <LinkBox
               key={n.id}
@@ -72,3 +42,38 @@ export default function NounsList({ params }: Props) {
     </Content>
   );
 }
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined;
+}) => ({
+  title: data
+    ? `${nounTypePluralDisplayText[data.nounType]} - ${data.campaign.name}`
+    : "",
+});
+
+type LoaderData = {
+  nounType: string;
+  nounsOfType: Array<Noun>;
+  campaign: Campaign;
+};
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const { campaignId } = params;
+  const nounType = getNounTypeFromUrlFragment(
+    new URL(request.url).searchParams.get("nounType")
+  );
+  if (!nounType || !campaignId)
+    throw new Error(
+      `nounType and campaignId required, ${JSON.stringify({
+        nounType,
+        campaignId,
+      })}`
+    );
+  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
+  const nounsOfType = await db.noun.findMany({
+    where: { nounType },
+    orderBy: { name: "asc" },
+  });
+  return { nounType, nounsOfType, campaign };
+};

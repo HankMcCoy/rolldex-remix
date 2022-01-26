@@ -1,5 +1,5 @@
 import { LabelRow } from "~/components/forms";
-import { ActionFunction } from "remix";
+import { ActionFunction, MetaFunction } from "remix";
 import { db } from "~/db.server";
 import { createUserSession } from "~/session.server";
 
@@ -20,6 +20,8 @@ export default function Login() {
     </div>
   );
 }
+
+export const meta: MetaFunction = () => ({ title: "Login" });
 
 export const action: ActionFunction = async ({ request }) => {
   const body = await request.formData();

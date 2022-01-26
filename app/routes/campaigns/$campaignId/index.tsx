@@ -4,71 +4,11 @@ import { LinkBox } from "~/components/link-box";
 import { TitledSection } from "~/components/titled-section";
 import { AddableList } from "~/components/addable-list";
 
-import { LoaderFunction, useLoaderData } from "remix";
+import { LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { Campaign, Noun, Member, Session } from ".prisma/client";
 import { db } from "~/db.server";
-import { nounTypeUrlFragment } from "~/fake-data";
 
-type LoaderData = {
-  id: string;
-  campaign: Campaign;
-  people: Array<Noun>;
-  places: Array<Noun>;
-  things: Array<Noun>;
-  factions: Array<Noun>;
-  members: Array<Member>;
-  sessions: Array<Session>;
-};
-export let loader: LoaderFunction = async ({ params }): Promise<LoaderData> => {
-  const { campaignId } = params;
-  if (!campaignId) throw new Response("Bad Request", { status: 400 });
-
-  const [campaign, people, places, things, factions, sessions, members] =
-    await Promise.all([
-      db.campaign.findUnique({ where: { id: campaignId } }),
-      db.noun.findMany({
-        where: { campaignId, nounType: "PERSON" },
-        orderBy: { name: "asc" },
-        take: 3,
-      }),
-      db.noun.findMany({
-        where: { campaignId, nounType: "PLACE" },
-        orderBy: { name: "asc" },
-        take: 3,
-      }),
-      db.noun.findMany({
-        where: { campaignId, nounType: "THING" },
-        orderBy: { name: "asc" },
-        take: 3,
-      }),
-      db.noun.findMany({
-        where: { campaignId, nounType: "FACTION" },
-        orderBy: { name: "asc" },
-        take: 3,
-      }),
-      db.session.findMany({ where: { campaignId } }),
-      db.member.findMany({ where: { campaignId } }),
-    ]);
-  if (!campaign) throw new Response("Not Found", { status: 404 });
-
-  return {
-    campaign,
-    id: campaignId,
-    people,
-    places,
-    things,
-    factions,
-    sessions,
-    members,
-  };
-};
-
-interface Props {
-  params: {
-    campaignId: string;
-  };
-}
-export default function ViewCampaign({ params }: Props) {
+export default function ViewCampaign() {
   const { campaign, id, people, places, things, factions, sessions, members } =
     useLoaderData<LoaderData>();
   const getNounEl = useCallback(
@@ -166,3 +106,63 @@ export default function ViewCampaign({ params }: Props) {
     </Content>
   );
 }
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined;
+}) => ({ title: data ? data.campaign.name : "" });
+
+type LoaderData = {
+  id: string;
+  campaign: Campaign;
+  people: Array<Noun>;
+  places: Array<Noun>;
+  things: Array<Noun>;
+  factions: Array<Noun>;
+  members: Array<Member>;
+  sessions: Array<Session>;
+};
+export let loader: LoaderFunction = async ({ params }): Promise<LoaderData> => {
+  const { campaignId } = params;
+  if (!campaignId) throw new Response("Bad Request", { status: 400 });
+
+  const [campaign, people, places, things, factions, sessions, members] =
+    await Promise.all([
+      db.campaign.findUnique({ where: { id: campaignId } }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "PERSON" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "PLACE" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "THING" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.noun.findMany({
+        where: { campaignId, nounType: "FACTION" },
+        orderBy: { name: "asc" },
+        take: 3,
+      }),
+      db.session.findMany({ where: { campaignId } }),
+      db.member.findMany({ where: { campaignId } }),
+    ]);
+  if (!campaign) throw new Response("Not Found", { status: 404 });
+
+  return {
+    campaign,
+    id: campaignId,
+    people,
+    places,
+    things,
+    factions,
+    sessions,
+    members,
+  };
+};

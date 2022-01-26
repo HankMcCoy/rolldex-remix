@@ -1,5 +1,7 @@
 import { useEffect, useRef, MutableRefObject } from "react";
 import isHotkey from "is-hotkey";
+import { HtmlMetaDescriptor, MetaFunction } from "remix";
+import { Params } from "react-router";
 
 export const classNames = (...classes: Array<string | undefined>) =>
   classes.filter(Boolean).join(" ");
@@ -41,3 +43,20 @@ export function useShortcut<T extends HTMLElement>(
   }, [shortcut]);
   return clickerRef;
 }
+
+/*
+export function createSimpleMeta<LoaderData>(
+  foo: ({
+    data,
+    params,
+  }: {
+    data: LoaderData;
+    params: Params;
+  }) => HtmlMetaDescriptor
+) {
+  const meta: MetaFunction = (args) => {
+    if (args.data)
+  };
+  return meta;
+}
+*/

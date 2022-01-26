@@ -1,12 +1,10 @@
 import { FormPage } from "~/components/layout";
-import { ActionFunction, useTransition, redirect, Form } from "remix";
+import { ActionFunction, redirect, MetaFunction } from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { getFormFields } from "~/util.server";
 import { db } from "~/db.server";
 
 export default function AddCampaign() {
-  const transition = useTransition();
-
   return (
     <FormPage heading="New Campaign" formId="new-campaign-form">
       <TextField label="Name:" name="name" />
@@ -14,6 +12,8 @@ export default function AddCampaign() {
     </FormPage>
   );
 }
+
+export const meta: MetaFunction = () => ({ title: "Add campaign" });
 
 export const action: ActionFunction = async ({ request }) => {
   const {

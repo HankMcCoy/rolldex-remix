@@ -1,26 +1,9 @@
 import { Content, LinkButton } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
-import { LoaderFunction, useLoaderData } from "remix";
+import { LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { TitledSection } from "~/components/titled-section";
 import { db } from "~/db.server";
 import { Campaign, Session } from "@prisma/client";
-
-type LoaderData = {
-  session: Session;
-  campaign: Campaign;
-};
-export let loader: LoaderFunction = async ({ params }) => {
-  const { sessionId, campaignId } = params;
-  if (!sessionId || !campaignId)
-    throw new Error("nounId and campaignId required");
-
-  const [session, campaign] = await Promise.all([
-    db.session.findUnique({ where: { id: sessionId } }),
-    db.campaign.findUnique({ where: { id: campaignId } }),
-  ]);
-
-  return { session, campaign };
-};
 
 export default function ViewSession() {
   const { session, campaign } = useLoaderData<LoaderData>();
@@ -58,3 +41,26 @@ export default function ViewSession() {
     </Content>
   );
 }
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined;
+}) => ({ title: data ? `${data.session.name} - ${data.campaign.name}` : "" });
+
+type LoaderData = {
+  session: Session;
+  campaign: Campaign;
+};
+export let loader: LoaderFunction = async ({ params }) => {
+  const { sessionId, campaignId } = params;
+  if (!sessionId || !campaignId)
+    throw new Error("nounId and campaignId required");
+
+  const [session, campaign] = await Promise.all([
+    db.session.findUnique({ where: { id: sessionId } }),
+    db.campaign.findUnique({ where: { id: campaignId } }),
+  ]);
+
+  return { session, campaign };
+};

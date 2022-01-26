@@ -1,41 +1,17 @@
 import { LinkButton, Content } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
 import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
-import { ActionFunction, LoaderFunction, redirect, useLoaderData } from "remix";
+import {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction,
+  redirect,
+  useLoaderData,
+} from "remix";
 import { TitledSection } from "~/components/titled-section";
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
 
-type LoaderData = {
-  noun: Noun;
-  campaign: Campaign;
-};
-export let loader: LoaderFunction = async ({ params }) => {
-  const { nounId, campaignId } = params;
-  if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
-
-  const [noun, campaign] = await Promise.all([
-    db.noun.findUnique({ where: { id: nounId } }),
-    db.campaign.findUnique({ where: { id: campaignId } }),
-  ]);
-
-  return { noun, campaign };
-};
-
-export let action: ActionFunction = async ({ request, params }) => {
-  if (request.method === "DELETE") {
-    const { nounId, campaignId } = params;
-    await db.noun.delete({ where: { id: nounId } });
-    return redirect(`/campaigns/${campaignId}`);
-  }
-
-  throw new Error("Non-DELETE methods not implemented");
-};
-interface Props {
-  params: {
-    campaignId: string;
-  };
-}
 export default function ViewNoun({ params }: Props) {
   const { noun, campaign } = useLoaderData<LoaderData>();
 
@@ -77,4 +53,45 @@ export default function ViewNoun({ params }: Props) {
       </div>
     </Content>
   );
+}
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined;
+}) => ({
+  title: data ? `${data.noun.name} - ${data.campaign.name}` : "",
+});
+
+type LoaderData = {
+  noun: Noun;
+  campaign: Campaign;
+};
+export let loader: LoaderFunction = async ({ params }) => {
+  const { nounId, campaignId } = params;
+  if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
+
+  const [noun, campaign] = await Promise.all([
+    db.noun.findUnique({ where: { id: nounId } }),
+    db.campaign.findUnique({ where: { id: campaignId } }),
+  ]);
+
+  if (!noun) throw new Response("Noun not found", { status: 404 });
+
+  return { noun, campaign };
+};
+
+export let action: ActionFunction = async ({ request, params }) => {
+  if (request.method === "DELETE") {
+    const { nounId, campaignId } = params;
+    await db.noun.delete({ where: { id: nounId } });
+    return redirect(`/campaigns/${campaignId}`);
+  }
+
+  throw new Error("Non-DELETE methods not implemented");
+};
+interface Props {
+  params: {
+    campaignId: string;
+  };
 }

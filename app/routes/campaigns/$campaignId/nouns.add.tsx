@@ -1,17 +1,18 @@
 import { FormPage } from "~/components/layout";
-import { getNounTypeFromUrlFragment, nounTypeUrlFragment } from "~/fake-data";
-import { LoaderFunction, ActionFunction, useLoaderData, redirect } from "remix";
+import { getNounTypeFromUrlFragment } from "~/fake-data";
+import {
+  LoaderFunction,
+  ActionFunction,
+  useLoaderData,
+  redirect,
+  MetaFunction,
+} from "remix";
 import { TextField, TextareaField, LabelRow } from "~/components/forms";
 import { Campaign } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
 
-interface Props {
-  params: {
-    campaignId: string;
-  };
-}
-export default function EditNoun({ params }: Props) {
+export default function EditNoun() {
   const { nounType, campaign } = useLoaderData<LoaderData>();
 
   return (
@@ -45,6 +46,12 @@ export default function EditNoun({ params }: Props) {
     </FormPage>
   );
 }
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined;
+}) => ({ title: data ? `Add noun - ${data.campaign.name}` : "" });
 
 type LoaderData = {
   nounType: string;

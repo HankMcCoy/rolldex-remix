@@ -1,18 +1,15 @@
 import { FormPage } from "~/components/layout";
-import { ActionFunction, redirect, LoaderFunction, useLoaderData } from "remix";
+import {
+  ActionFunction,
+  redirect,
+  LoaderFunction,
+  useLoaderData,
+  MetaFunction,
+} from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { getFormFields } from "~/util.server";
 import { db } from "~/db.server";
 import { Campaign } from "@prisma/client";
-
-interface LoaderData {
-  campaign: Campaign;
-}
-export let loader: LoaderFunction = async ({ request, params }) => {
-  const { campaignId } = params;
-  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
-  return { campaign };
-};
 
 export default function EditCampaign() {
   const { campaign } = useLoaderData<LoaderData>();
@@ -30,6 +27,23 @@ export default function EditCampaign() {
     </FormPage>
   );
 }
+
+export const meta: MetaFunction = ({
+  data,
+}: {
+  data: LoaderData | undefined;
+}) => ({
+  title: data ? `Edit ${data.campaign.name}` : "",
+});
+
+interface LoaderData {
+  campaign: Campaign;
+}
+export let loader: LoaderFunction = async ({ request, params }) => {
+  const { campaignId } = params;
+  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
+  return { campaign };
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const {
