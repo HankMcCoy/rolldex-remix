@@ -8,6 +8,7 @@ interface Props<T> {
   addHref: string;
   addTitle: string;
   entities: Array<T>;
+  count: number;
   seeAllHref?: string;
   getListItem: (e: T, i: number) => JSX.Element;
 }
@@ -16,12 +17,13 @@ export const AddableList = <T extends unknown>({
   addHref,
   addTitle,
   entities,
+  count,
   seeAllHref,
   getListItem,
 }: Props<T>) => {
   return (
     <TitledSection
-      title={`${title} (${entities.length})`}
+      title={`${title} (${count})`}
       controls={
         <LinkButton
           to={addHref}
@@ -34,7 +36,7 @@ export const AddableList = <T extends unknown>({
       }
     >
       <div className="flex flex-col space-y-2">
-        {entities.slice(0, 3).map(getListItem)}
+        {entities.map(getListItem)}
         {seeAllHref ? (
           <Link
             to={seeAllHref}

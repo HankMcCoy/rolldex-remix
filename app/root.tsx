@@ -100,7 +100,7 @@ function Document({
 }) {
   return (
     <StrictMode>
-      <html lang="en">
+      <html lang="en" className="h-full">
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -108,7 +108,7 @@ function Document({
           <Meta />
           <Links />
         </head>
-        <body className="text-gray-800">
+        <body className="text-gray-800 h-full">
           {children}
           <ScrollRestoration />
           <Scripts />

@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, ReactNode } from "react";
 import { BookOpenIcon, UserGroupIcon } from "@heroicons/react/outline";
 import { classNames } from "~/util";
 import { Link } from "remix";
@@ -92,27 +92,34 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
 
 export const Page: FunctionComponent = ({ children }) => {
   return (
-    <div>
+    <>
       <Sidebar />
-      <div className="lg:pl-56 flex flex-col flex-1">{children}</div>
-    </div>
+      <div className="lg:pl-56 flex flex-col flex-1 min-h-full">{children}</div>
+    </>
   );
 };
 
 export const Main: FunctionComponent = ({ children }) => {
-  return <main className="px-6 py-4 flex flex-col space-y-2">{children}</main>;
+  return (
+    <main className="flex-1 px-6 py-4 flex flex-col space-y-2">{children}</main>
+  );
 };
 
-export const Content: FunctionComponent<PageHeaderProps> = ({
+type ContentProps = { sidePanel?: ReactNode } & PageHeaderProps;
+export const Content: FunctionComponent<ContentProps> = ({
   heading,
   breadcrumbs,
   controls,
+  sidePanel,
   children,
 }) => {
   return (
     <>
       <PageHeader {...{ heading, breadcrumbs, controls }} />
-      <Main>{children}</Main>
+      <div className="flex flex-1">
+        <Main>{children}</Main>
+        {sidePanel}
+      </div>
     </>
   );
 };

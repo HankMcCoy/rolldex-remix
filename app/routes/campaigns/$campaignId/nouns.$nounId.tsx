@@ -9,11 +9,12 @@ import {
   useLoaderData,
 } from "remix";
 import { TitledSection } from "~/components/titled-section";
-import { Campaign, Noun } from "@prisma/client";
+import { Campaign, Noun, Session } from "@prisma/client";
 import { db } from "~/db.server";
+import { getRelations } from "~/queries/related.server";
 
-export default function ViewNoun({ params }: Props) {
-  const { noun, campaign } = useLoaderData<LoaderData>();
+export default function ViewNoun() {
+  const { noun, campaign, relations } = useLoaderData<LoaderData>();
 
   return (
     <Content
@@ -38,6 +39,22 @@ export default function ViewNoun({ params }: Props) {
         >
           Edit
         </LinkButton>
+      }
+      sidePanel={
+        <div className="flex-initial w-64 bg-violet-50">
+          <h2>People</h2>
+          <ul>
+            {relations.people.map((n) => (
+              <li>{n.name}</li>
+            ))}
+          </ul>
+          <h2>Sessions</h2>
+          <ul>
+            {relations.sessions.map((s) => (
+              <li>{s.name}</li>
+            ))}
+          </ul>
+        </div>
       }
     >
       <div className="flex space-x-6">
@@ -66,19 +83,37 @@ export const meta: MetaFunction = ({
 type LoaderData = {
   noun: Noun;
   campaign: Campaign;
+  relations: {
+    people: Array<Noun>;
+    places: Array<Noun>;
+    things: Array<Noun>;
+    factions: Array<Noun>;
+    sessions: Array<Session>;
+  };
 };
 export let loader: LoaderFunction = async ({ params }) => {
   const { nounId, campaignId } = params;
   if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
 
-  const [noun, campaign] = await Promise.all([
+  const [noun, campaign, relations] = await Promise.all([
     db.noun.findUnique({ where: { id: nounId } }),
     db.campaign.findUnique({ where: { id: campaignId } }),
+    getRelations({ nounId, campaignId }),
   ]);
 
   if (!noun) throw new Response("Noun not found", { status: 404 });
 
-  return { noun, campaign };
+  return {
+    noun,
+    campaign,
+    relations: {
+      sessions: relations.sessions,
+      people: relations.nouns.filter((n) => n.nounType === "PERSON"),
+      places: relations.nouns.filter((n) => n.nounType === "PLACE"),
+      things: relations.nouns.filter((n) => n.nounType === "THING"),
+      factions: relations.nouns.filter((n) => n.nounType === "FACTIOn"),
+    },
+  };
 };
 
 export let action: ActionFunction = async ({ request, params }) => {
@@ -90,8 +125,3 @@ export let action: ActionFunction = async ({ request, params }) => {
 
   throw new Error("Non-DELETE methods not implemented");
 };
-interface Props {
-  params: {
-    campaignId: string;
-  };
-}
