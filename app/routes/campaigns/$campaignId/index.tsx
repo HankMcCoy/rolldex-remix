@@ -5,7 +5,7 @@ import { TitledSection } from "~/components/titled-section";
 import { AddableList } from "~/components/addable-list";
 
 import { LoaderFunction, MetaFunction, useLoaderData } from "remix";
-import { Campaign, Noun, Member, Session } from ".prisma/client";
+import { Campaign, Noun, Member, Session } from "@prisma/client";
 import { db } from "~/db.server";
 
 export default function ViewCampaign() {

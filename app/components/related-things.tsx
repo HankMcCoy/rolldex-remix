@@ -1,4 +1,5 @@
 import { Link } from "remix";
+import { Tooltip } from "./tooltip";
 
 export interface RelatedThing {
   id: string;
@@ -17,7 +18,14 @@ export const RelatedThings = ({ title, things, getUrl }: RelatedThingsProps) =>
       <ul>
         {things.map((t) => (
           <li className="">
-            <Link to={getUrl(t)}>- {t.name}</Link>
+            <Tooltip
+              renderTarget={(ref) => (
+                <li ref={ref}>
+                  <Link to={getUrl(t)}>- {t.name}</Link>
+                </li>
+              )}
+              tooltipContent={t.summary}
+            />
           </li>
         ))}
       </ul>
