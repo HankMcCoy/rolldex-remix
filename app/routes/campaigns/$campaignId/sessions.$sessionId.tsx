@@ -1,12 +1,19 @@
-import { Content, LinkButton } from "~/components/layout";
+import { Content, LinkButton, SidePanel } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
 import { LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { TitledSection } from "~/components/titled-section";
+import { Campaign, Noun, Session } from "@prisma/client";
 import { db } from "~/db.server";
-import { Campaign, Session } from "@prisma/client";
+import { getRelationsForSession } from "~/queries/related.server";
+import { RelatedThings, RelatedThing } from "~/components/related-things";
+import { useCallback } from "react";
 
 export default function ViewSession() {
-  const { session, campaign } = useLoaderData<LoaderData>();
+  const { session, campaign, relations } = useLoaderData<LoaderData>();
+  const getNounUrl = useCallback(
+    (t: RelatedThing) => `/campaigns/${campaign.id}/nouns/${t.id}`,
+    [campaign.id]
+  );
 
   return (
     <Content
@@ -25,6 +32,30 @@ export default function ViewSession() {
         >
           Edit
         </LinkButton>
+      }
+      sidePanel={
+        <SidePanel>
+          <RelatedThings
+            title="People"
+            things={relations.people}
+            getUrl={getNounUrl}
+          />
+          <RelatedThings
+            title="Places"
+            things={relations.places}
+            getUrl={getNounUrl}
+          />
+          <RelatedThings
+            title="Things"
+            things={relations.things}
+            getUrl={getNounUrl}
+          />
+          <RelatedThings
+            title="Factions"
+            things={relations.factions}
+            getUrl={getNounUrl}
+          />
+        </SidePanel>
       }
     >
       <div className="flex space-x-6">
@@ -51,16 +82,23 @@ export const meta: MetaFunction = ({
 type LoaderData = {
   session: Session;
   campaign: Campaign;
+  relations: {
+    people: Array<Noun>;
+    places: Array<Noun>;
+    things: Array<Noun>;
+    factions: Array<Noun>;
+  };
 };
 export let loader: LoaderFunction = async ({ params }) => {
   const { sessionId, campaignId } = params;
   if (!sessionId || !campaignId)
     throw new Error("nounId and campaignId required");
 
-  const [session, campaign] = await Promise.all([
+  const [session, campaign, relations] = await Promise.all([
     db.session.findUnique({ where: { id: sessionId } }),
     db.campaign.findUnique({ where: { id: campaignId } }),
+    getRelationsForSession({ sessionId, campaignId }),
   ]);
 
-  return { session, campaign };
+  return { session, campaign, relations };
 };

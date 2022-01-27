@@ -123,3 +123,9 @@ export const Content: FunctionComponent<ContentProps> = ({
     </>
   );
 };
+
+export const SidePanel: FunctionComponent = ({ children }) => (
+  <div className="flex-initial w-64 bg-violet-50 text-gray-800 text-opacity-75 py-2">
+    {children}
+  </div>
+);

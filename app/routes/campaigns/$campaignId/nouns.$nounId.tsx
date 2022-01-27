@@ -1,42 +1,27 @@
-import { LinkButton, Content } from "~/components/layout";
+import { LinkButton, Content, SidePanel } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
 import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
 import {
   ActionFunction,
-  Link,
   LoaderFunction,
   MetaFunction,
   redirect,
   useLoaderData,
 } from "remix";
+import { RelatedThings, RelatedThing } from "~/components/related-things";
 import { TitledSection } from "~/components/titled-section";
 import { Campaign, Noun, Session } from "@prisma/client";
-import { db } from "~/db.server";
-import { getRelations } from "~/queries/related.server";
 
-type RelatedNounsProps = {
-  title: string;
-  nouns: Array<Noun>;
-  campaignId: string;
-};
-const RelatedNouns = ({ title, nouns, campaignId }: RelatedNounsProps) =>
-  nouns.length ? (
-    <div className="px-5 my-3">
-      <h2 className="text-lg font-serif mb-1">{title}</h2>
-      <ul>
-        {nouns.map((n) => (
-          <li className="">
-            <Link to={`/campaigns/${campaignId}/nouns/${n.id}`}>
-              - {n.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  ) : null;
+import { db } from "~/db.server";
+import { getRelationsForNoun } from "~/queries/related.server";
+import { useCallback } from "react";
 
 export default function ViewNoun() {
   const { noun, campaign, relations } = useLoaderData<LoaderData>();
+  const getNounUrl = useCallback(
+    (t: RelatedThing) => `/campaigns/${campaign.id}/nouns/${t.id}`,
+    [campaign.id]
+  );
 
   return (
     <Content
@@ -63,28 +48,33 @@ export default function ViewNoun() {
         </LinkButton>
       }
       sidePanel={
-        <div className="flex-initial w-64 bg-violet-50 text-gray-800 text-opacity-75 py-2">
-          <RelatedNouns
+        <SidePanel>
+          <RelatedThings
             title="People"
-            nouns={relations.people}
-            campaignId={campaign.id}
+            things={relations.people}
+            getUrl={getNounUrl}
           />
-          <RelatedNouns
+          <RelatedThings
             title="Places"
-            nouns={relations.places}
-            campaignId={campaign.id}
+            things={relations.places}
+            getUrl={getNounUrl}
           />
-          <RelatedNouns
+          <RelatedThings
             title="Things"
-            nouns={relations.things}
-            campaignId={campaign.id}
+            things={relations.things}
+            getUrl={getNounUrl}
           />
-          <RelatedNouns
+          <RelatedThings
             title="Factions"
-            nouns={relations.factions}
-            campaignId={campaign.id}
+            things={relations.factions}
+            getUrl={getNounUrl}
           />
-        </div>
+          <RelatedThings
+            title="Sessions"
+            things={relations.sessions}
+            getUrl={(t) => `/campaigns/${campaign.id}/sessions/${t.id}`}
+          />
+        </SidePanel>
       }
     >
       <div className="flex space-x-6">
@@ -128,7 +118,7 @@ export let loader: LoaderFunction = async ({ params }) => {
   const [noun, campaign, relations] = await Promise.all([
     db.noun.findUnique({ where: { id: nounId } }),
     db.campaign.findUnique({ where: { id: campaignId } }),
-    getRelations({ nounId, campaignId }),
+    getRelationsForNoun({ nounId, campaignId }),
   ]);
 
   if (!noun) throw new Response("Noun not found", { status: 404 });
@@ -136,13 +126,7 @@ export let loader: LoaderFunction = async ({ params }) => {
   return {
     noun,
     campaign,
-    relations: {
-      sessions: relations.sessions,
-      people: relations.nouns.filter((n) => n.nounType === "PERSON"),
-      places: relations.nouns.filter((n) => n.nounType === "PLACE"),
-      things: relations.nouns.filter((n) => n.nounType === "THING"),
-      factions: relations.nouns.filter((n) => n.nounType === "FACTION"),
-    },
+    relations,
   };
 };
 

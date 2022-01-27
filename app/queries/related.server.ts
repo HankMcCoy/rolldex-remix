@@ -14,6 +14,21 @@ function getSearchText(s: Searchable): string {
     .replace(/'s/g, "");
 }
 
+type NounsByType = {
+  people: Array<Noun>;
+  places: Array<Noun>;
+  things: Array<Noun>;
+  factions: Array<Noun>;
+};
+function splitNounsByType(nouns: Array<Noun>): NounsByType {
+  return {
+    people: nouns.filter((n) => n.nounType === "PERSON"),
+    places: nouns.filter((n) => n.nounType === "PLACE"),
+    things: nouns.filter((n) => n.nounType === "THING"),
+    factions: nouns.filter((n) => n.nounType === "FACTION"),
+  };
+}
+
 // A noun A's content matches another noun B's name if:
 //    A's summary, notes, or private notes, when converted to lower case, with possessives (e.g. "'s") removed
 //    contains B's lower cased name
@@ -28,15 +43,18 @@ function referenceEachOther(a: Searchable, b: Searchable) {
 
   return false;
 }
-type GetRelatedNounsArgs = {
+type GetRelationsForNounArgs = {
   nounId: string;
   campaignId: string;
 };
-export async function getRelations({
+export async function getRelationsForNoun({
   nounId,
   campaignId,
-}: GetRelatedNounsArgs): Promise<{
-  nouns: Array<Noun>;
+}: GetRelationsForNounArgs): Promise<{
+  people: Array<Noun>;
+  places: Array<Noun>;
+  things: Array<Noun>;
+  factions: Array<Noun>;
   sessions: Array<Session>;
 }> {
   const [noun, allNouns, allSessions] = await Promise.all([
@@ -45,13 +63,32 @@ export async function getRelations({
     db.session.findMany({ where: { campaignId } }),
   ]);
   if (!noun) throw new Response("Not found", { status: 404 });
+  const matchingNouns = allNouns.filter((nounToCheck) =>
+    referenceEachOther(noun, nounToCheck)
+  );
 
   return {
-    nouns: allNouns.filter((nounToCheck) =>
-      referenceEachOther(noun, nounToCheck)
-    ),
+    ...splitNounsByType(matchingNouns),
     sessions: allSessions.filter((session) =>
       referenceEachOther(noun, session)
     ),
   };
+}
+type GetRelationsForSessionArgs = {
+  sessionId: string;
+  campaignId: string;
+};
+export async function getRelationsForSession({
+  sessionId,
+  campaignId,
+}: GetRelationsForSessionArgs): Promise<NounsByType> {
+  const [session, allNouns] = await Promise.all([
+    db.session.findUnique({ where: { id: sessionId } }),
+    db.noun.findMany({ where: { campaignId } }),
+  ]);
+  if (!session) throw new Response("Not found", { status: 404 });
+
+  return splitNounsByType(
+    allNouns.filter((nounToCheck) => referenceEachOther(session, nounToCheck))
+  );
 }
