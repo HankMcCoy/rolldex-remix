@@ -83,7 +83,7 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
               )
             : null}
         </div>
-        <h1 className="text-4xl">{heading}</h1>
+        <h1 className="text-4xl font-serif">{heading}</h1>
       </div>
       <div className="flex-initial flex space-x-2">{controls}</div>
     </div>

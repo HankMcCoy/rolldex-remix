@@ -3,6 +3,7 @@ import { Markdown } from "~/components/markdown";
 import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
 import {
   ActionFunction,
+  Link,
   LoaderFunction,
   MetaFunction,
   redirect,
@@ -12,6 +13,27 @@ import { TitledSection } from "~/components/titled-section";
 import { Campaign, Noun, Session } from "@prisma/client";
 import { db } from "~/db.server";
 import { getRelations } from "~/queries/related.server";
+
+type RelatedNounsProps = {
+  title: string;
+  nouns: Array<Noun>;
+  campaignId: string;
+};
+const RelatedNouns = ({ title, nouns, campaignId }: RelatedNounsProps) =>
+  nouns.length ? (
+    <div className="px-5 my-3">
+      <h2 className="text-lg font-serif mb-1">{title}</h2>
+      <ul>
+        {nouns.map((n) => (
+          <li className="">
+            <Link to={`/campaigns/${campaignId}/nouns/${n.id}`}>
+              - {n.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
 
 export default function ViewNoun() {
   const { noun, campaign, relations } = useLoaderData<LoaderData>();
@@ -41,19 +63,27 @@ export default function ViewNoun() {
         </LinkButton>
       }
       sidePanel={
-        <div className="flex-initial w-64 bg-violet-50">
-          <h2>People</h2>
-          <ul>
-            {relations.people.map((n) => (
-              <li>{n.name}</li>
-            ))}
-          </ul>
-          <h2>Sessions</h2>
-          <ul>
-            {relations.sessions.map((s) => (
-              <li>{s.name}</li>
-            ))}
-          </ul>
+        <div className="flex-initial w-64 bg-violet-50 text-gray-800 text-opacity-75 py-2">
+          <RelatedNouns
+            title="People"
+            nouns={relations.people}
+            campaignId={campaign.id}
+          />
+          <RelatedNouns
+            title="Places"
+            nouns={relations.places}
+            campaignId={campaign.id}
+          />
+          <RelatedNouns
+            title="Things"
+            nouns={relations.things}
+            campaignId={campaign.id}
+          />
+          <RelatedNouns
+            title="Factions"
+            nouns={relations.factions}
+            campaignId={campaign.id}
+          />
         </div>
       }
     >
@@ -111,7 +141,7 @@ export let loader: LoaderFunction = async ({ params }) => {
       people: relations.nouns.filter((n) => n.nounType === "PERSON"),
       places: relations.nouns.filter((n) => n.nounType === "PLACE"),
       things: relations.nouns.filter((n) => n.nounType === "THING"),
-      factions: relations.nouns.filter((n) => n.nounType === "FACTIOn"),
+      factions: relations.nouns.filter((n) => n.nounType === "FACTION"),
     },
   };
 };
