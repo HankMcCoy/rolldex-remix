@@ -17,16 +17,14 @@ export const RelatedThings = ({ title, things, getUrl }: RelatedThingsProps) =>
       <h2 className="text-lg font-serif mb-1">{title}</h2>
       <ul>
         {things.map((t) => (
-          <li className="">
-            <Tooltip
-              renderTarget={(ref) => (
-                <li ref={ref}>
-                  <Link to={getUrl(t)}>- {t.name}</Link>
-                </li>
-              )}
-              tooltipContent={t.summary}
-            />
-          </li>
+          <Tooltip
+            renderTarget={(ref) => (
+              <li ref={ref}>
+                <Link to={getUrl(t)}>- {t.name}</Link>
+              </li>
+            )}
+            tooltipContent={t.summary}
+          />
         ))}
       </ul>
     </div>
