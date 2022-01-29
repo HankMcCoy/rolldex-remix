@@ -1,6 +1,4 @@
-import { LinkButton, Content, SidePanel } from "~/components/layout";
-import { Markdown } from "~/components/markdown";
-import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
+import { useCallback } from "react";
 import {
   ActionFunction,
   LoaderFunction,
@@ -8,13 +6,19 @@ import {
   redirect,
   useLoaderData,
 } from "remix";
-import { RelatedThings, RelatedThing } from "~/components/related-things";
-import { TitledSection } from "~/components/titled-section";
 import { Campaign, Noun, Session } from "@prisma/client";
+
+import { LinkButton, Content, SidePanel } from "~/components/layout";
+import { Markdown } from "~/components/markdown";
+import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
+import { RelatedThings, RelatedThing } from "~/components/related-things";
+import {
+  TitledSection,
+  PrivateTitledSection,
+} from "~/components/titled-section";
 
 import { db } from "~/db.server";
 import { getRelationsForNoun } from "~/queries/related.server";
-import { useCallback } from "react";
 
 export default function ViewNoun() {
   const { noun, campaign, relations } = useLoaderData<LoaderData>();
@@ -83,9 +87,9 @@ export default function ViewNoun() {
           <TitledSection title="Notes">
             <Markdown>{noun.notes}</Markdown>
           </TitledSection>
-          <TitledSection title="Private Notes">
+          <PrivateTitledSection title="Private Notes">
             <Markdown>{noun.privateNotes}</Markdown>
-          </TitledSection>
+          </PrivateTitledSection>
         </div>
       </div>
     </Content>
