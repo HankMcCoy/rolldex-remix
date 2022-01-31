@@ -23,8 +23,10 @@ export const PrivateTitledSection: FunctionComponent<Props> = ({
   children,
 }) => (
   <details className="cursor-pointer pl-6 py-3 -ml-6 bg-gray-50 space-y-2 border border-gray-200">
-    <summary className="flex justify-between items-center">
-      <Heading l={2}>{title}</Heading>
+    <summary>
+      <Heading l={2} className="inline">
+        {title}
+      </Heading>
     </summary>
     {children}
   </details>
