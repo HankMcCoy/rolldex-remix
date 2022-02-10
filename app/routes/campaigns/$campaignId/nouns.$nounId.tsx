@@ -82,7 +82,7 @@ export default function ViewNoun() {
       }
     >
       <div className="flex space-x-6">
-        <div className="flex-1 flex flex-col space-y-6">
+        <div className="flex flex-1 flex-col space-y-6">
           <TitledSection title="Summary">{noun.summary}</TitledSection>
           <TitledSection title="Notes">
             <Markdown>{noun.notes}</Markdown>

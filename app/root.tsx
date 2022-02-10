@@ -13,6 +13,9 @@ import type { LinksFunction } from "remix";
 import tailwindUrl from "./tailwind.css";
 import styles from "./styles/app.css";
 import { useMountHotkeyListener } from "./util/keyboard-shortcuts";
+import ReactModal from "react-modal";
+
+ReactModal.setAppElement("#main");
 
 // https://remix.run/api/app#links
 export let links: LinksFunction = () => {
@@ -111,7 +114,9 @@ function Document({
           <Links />
         </head>
         <body className="text-gray-800 h-full">
-          {children}
+          <div id="main" className="h-full">
+            {children}
+          </div>
           <ScrollRestoration />
           <Scripts />
           {process.env.NODE_ENV === "development" && <LiveReload />}
