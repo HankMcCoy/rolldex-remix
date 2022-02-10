@@ -1,6 +1,6 @@
 import { FunctionComponent, MouseEventHandler } from "react";
 import { Link } from "remix";
-import { classNames, useShortcut } from "~/util";
+import { classNames, useClickHotkey } from "~/util";
 
 type ButtonStyle =
   | "darkPrimary"
@@ -37,7 +37,7 @@ export const LinkButton: FunctionComponent<LinkButtonProps> = ({
   children,
   size = "medium",
 }) => {
-  const shortcutRef = useShortcut<HTMLAnchorElement>(shortcut);
+  const shortcutRef = useClickHotkey<HTMLAnchorElement>(shortcut);
   return (
     <Link
       to={to}
@@ -66,7 +66,7 @@ export const Button: FunctionComponent<ButtonProps> = ({
   size = "medium",
   children,
 }) => {
-  const shortcutRef = useShortcut<HTMLButtonElement>(shortcut);
+  const shortcutRef = useClickHotkey<HTMLButtonElement>(shortcut);
   return (
     <button
       form={form}

@@ -12,6 +12,7 @@ import type { LinksFunction } from "remix";
 
 import tailwindUrl from "./tailwind.css";
 import styles from "./styles/app.css";
+import { useMountHotkeyListener } from "./util/keyboard-shortcuts";
 
 // https://remix.run/api/app#links
 export let links: LinksFunction = () => {
@@ -98,6 +99,7 @@ function Document({
   children: React.ReactNode;
   title?: string;
 }) {
+  useMountHotkeyListener();
   return (
     <StrictMode>
       <html lang="en" className="h-full">
