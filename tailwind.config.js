@@ -2,7 +2,8 @@ const colors = require("tailwindcss/colors");
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
-  purge: ["./app/routes/**/*.{js,ts,tsx}", "./app/components/**/*.{js,ts,tsx}"],
+  mode: "jit",
+  purge: ["./app/**/*.{js,ts,tsx}"],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {

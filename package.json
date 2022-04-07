@@ -31,7 +31,9 @@
     "react-router-dom": "^6.2.1",
     "react-tether": "^2.0.8",
     "remix": "^1.0.6",
+    "swr": "^1.2.2",
     "tailwindcss": "^2.2.19",
+    "use-debounce": "^7.0.1",
     "utility-types": "^3.10.0"
   },
   "devDependencies": {
