@@ -3,6 +3,7 @@ import { BookOpenIcon, UserGroupIcon } from "@heroicons/react/outline";
 import { classNames } from "~/util";
 import { Link } from "remix";
 import { useLocation } from "react-router-dom";
+import { User } from "@prisma/client";
 
 const navigation = [
   { name: "Campaigns", href: "/campaigns", icon: UserGroupIcon },
@@ -15,7 +16,8 @@ const intersperse = <T extends unknown>(
 ) =>
   list.slice(1).reduce((a, item, i) => [...a, separator(i), item], [list[0]]);
 
-export const Sidebar = () => {
+type SidebarProps = { user: User };
+export const Sidebar: FunctionComponent<SidebarProps> = ({ user }) => {
   const location = useLocation();
 
   return (
@@ -49,6 +51,7 @@ export const Sidebar = () => {
             ))}
           </nav>
         </div>
+        <div className="p-2 text-gray-300 text-sm">{user.email}</div>
       </div>
     </div>
   );
@@ -90,10 +93,11 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
   );
 };
 
-export const Page: FunctionComponent = ({ children }) => {
+type PageProps = { user: User };
+export const Page: FunctionComponent<PageProps> = ({ children, user }) => {
   return (
     <>
-      <Sidebar />
+      <Sidebar user={user} />
       <div className="lg:pl-56 flex flex-col flex-1 min-h-full">{children}</div>
     </>
   );

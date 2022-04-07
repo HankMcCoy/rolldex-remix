@@ -88,7 +88,7 @@ export default function ViewNoun() {
             <Markdown>{noun.notes}</Markdown>
           </TitledSection>
           <PrivateTitledSection title="Private Notes">
-            <Markdown>{noun.privateNotes}</Markdown>
+            <Markdown>{noun.privateNotes || "--"}</Markdown>
           </PrivateTitledSection>
         </div>
       </div>

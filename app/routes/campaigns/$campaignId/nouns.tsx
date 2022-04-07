@@ -72,7 +72,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     );
   const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
   const nounsOfType = await db.noun.findMany({
-    where: { nounType },
+    where: { campaignId, nounType },
     orderBy: { name: "asc" },
   });
   return { nounType, nounsOfType, campaign };

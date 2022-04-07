@@ -56,6 +56,13 @@ export async function getUser(request: Request) {
   }
 }
 
+export async function requireUser(request: Request) {
+  const user = await getUser(request);
+  if (!user) throw redirect("/login");
+
+  return user;
+}
+
 export async function logout(request: Request) {
   let session = await getSession(request.headers.get("Cookie"));
   return redirect("/login", {
