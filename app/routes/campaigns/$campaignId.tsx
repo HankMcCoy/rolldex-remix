@@ -3,10 +3,8 @@ import { LoaderFunction, Outlet, useLoaderData } from "remix";
 import ReactModal from "react-modal";
 import { useHotkey } from "~/util/keyboard-shortcuts";
 import { useDebounce } from "use-debounce";
-import useSWR from "swr";
+import { useFetch } from "~/util/use-fetch";
 import { Noun } from "@prisma/client";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 type QuickFindData = {
   nouns: Array<Noun>;
@@ -24,9 +22,8 @@ const QuickFindModal: FunctionComponent<QuickFindModalProps> = ({
 }) => {
   const [search, setSearch] = useState("");
   const [q] = useDebounce(search, 100);
-  const { data: quickFindData } = useSWR<QuickFindData>(
-    q ? `/campaigns/${campaignId}/quick-find?q=${q}` : null,
-    fetcher
+  const { data: quickFindData } = useFetch<QuickFindData>(
+    q ? `/campaigns/${campaignId}/quick-find?q=${q}` : null
   );
 
   return (
