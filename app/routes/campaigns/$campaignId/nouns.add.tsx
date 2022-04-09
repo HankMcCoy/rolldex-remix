@@ -12,8 +12,8 @@ import { Campaign } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
 
-export default function EditNoun() {
-  const { nounType, campaign } = useLoaderData<LoaderData>();
+export default function AddNoun() {
+  const { nounType, campaign, name } = useLoaderData<LoaderData>();
 
   return (
     <FormPage
@@ -25,7 +25,7 @@ export default function EditNoun() {
       ]}
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
-      <TextField name="name" label="Name:" />
+      <TextField name="name" label="Name:" defaultValue={name} />
       <LabelRow label="Noun Type">
         <select
           name="nounType"
@@ -56,15 +56,17 @@ export const meta: MetaFunction = ({
 type LoaderData = {
   nounType: string;
   campaign: Campaign;
+  name: string | undefined;
 };
 export let loader: LoaderFunction = async ({ request, params }) => {
   const { campaignId } = params;
 
   const url = new URL(request.url);
   const nounType = url.searchParams.get("nounType");
+  const name = url.searchParams.get("name") || undefined;
   if (!campaignId) throw new Error("nounId and campaignId required");
   const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
-  return { nounType, campaign };
+  return { nounType, campaign, name };
 };
 
 export const action: ActionFunction = async ({ request }) => {
