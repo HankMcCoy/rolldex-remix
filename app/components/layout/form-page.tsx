@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useEffect } from "react";
 import { Form, useNavigate, useTransition } from "remix";
 import { CmdCtrlKey } from "~/util";
 import { Main, PageHeader } from "./basics";
@@ -17,6 +17,16 @@ export const FormPage: FunctionComponent<FormPageProps> = ({
 }) => {
   const transition = useTransition();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    function confirmUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      return (e.returnValue = "THIS_VALUE_DOESNT_MATTER");
+    }
+    window.addEventListener("beforeunload", confirmUnload);
+    return () => window.removeEventListener("beforeunload", confirmUnload);
+  }, []);
+
   return (
     <>
       <PageHeader
