@@ -7,7 +7,12 @@ import {
   redirect,
   MetaFunction,
 } from "remix";
-import { TextField, TextareaField, LabelRow } from "~/components/forms";
+import {
+  TextField,
+  TextareaField,
+  MarkdownField,
+  LabelRow,
+} from "~/components/forms";
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
@@ -60,12 +65,7 @@ export default function EditNoun() {
         defaultValue={noun.summary}
         rows={3}
       />
-      <TextareaField
-        name="notes"
-        label="Notes:"
-        defaultValue={noun.notes}
-        rows={6}
-      />
+      <MarkdownField name="notes" label="Notes:" defaultValue={noun.notes} />
       <TextareaField
         name="privateNotes"
         label="Private Notes:"

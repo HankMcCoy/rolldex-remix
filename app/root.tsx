@@ -11,6 +11,7 @@ import {
 import type { LinksFunction } from "remix";
 
 import tailwindUrl from "./tailwind.css";
+import simpleMdeStyles from "simplemde/dist/simplemde.min.css";
 import styles from "./styles/app.css";
 import { useMountHotkeyListener } from "./util/keyboard-shortcuts";
 import ReactModal from "react-modal";
@@ -22,6 +23,7 @@ export let links: LinksFunction = () => {
   return [
     { rel: "stylesheet", href: tailwindUrl },
     { rel: "stylesheet", href: styles },
+    { rel: "stylesheet", href: simpleMdeStyles },
     {
       rel: "stylesheet",
       href: "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700",

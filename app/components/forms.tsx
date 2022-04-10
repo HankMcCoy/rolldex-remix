@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from "react";
+import { MarkdownEditor } from "./markdown";
 
 interface LabelRowProps {
   label: string;
@@ -63,6 +64,25 @@ export const TextareaField: FunctionComponent<TextareaFieldProps> = ({
         rows={rows}
         className="w-full"
       />
+    </LabelRow>
+  );
+};
+
+interface MarkdownFieldProps {
+  label: string;
+  name: string;
+  title?: string;
+  defaultValue?: string;
+}
+export const MarkdownField: FunctionComponent<MarkdownFieldProps> = ({
+  label,
+  name,
+  title,
+  defaultValue,
+}) => {
+  return (
+    <LabelRow label={label} title={title}>
+      <MarkdownEditor name={name} defaultValue={defaultValue ?? ""} />
     </LabelRow>
   );
 };
