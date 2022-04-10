@@ -18,6 +18,7 @@ export const RelatedThings = ({ title, things, getUrl }: RelatedThingsProps) =>
       <ul>
         {things.map((t) => (
           <Tooltip
+            key={t.id}
             renderTarget={(ref) => (
               <li ref={ref}>
                 <Link to={getUrl(t)}>- {t.name}</Link>
