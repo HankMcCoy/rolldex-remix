@@ -1,8 +1,7 @@
 import {
   FunctionComponent,
-  useCallback,
+  Reducer,
   useEffect,
-  useMemo,
   useReducer,
   useRef,
   useState,
@@ -12,11 +11,14 @@ import ReactModal from "react-modal";
 import { useHotkey } from "~/util/keyboard-shortcuts";
 import { useDebounce } from "use-debounce";
 import { useFetch } from "~/util/use-fetch";
-import { Noun } from "@prisma/client";
 
+type Match = {
+  name: string;
+  href: string;
+};
 type QuickFindState = {
   q: string;
-  matches: Array<Noun>;
+  matches: Array<Match>;
   selectedIdx: number;
 };
 type QuickFindAction =
@@ -32,7 +34,7 @@ type QuickFindAction =
     }
   | {
       type: "MATCHES_LOADED";
-      payload: Array<Noun>;
+      payload: Array<Match>;
     };
 const initialState: QuickFindState = {
   q: "",
@@ -45,7 +47,10 @@ const wrapSelected = (val: number, count: number) => {
   if (val === -1) return count - 1;
   return val;
 };
-function quickFindReducer(state: QuickFindState, action: QuickFindAction) {
+const quickFindReducer: Reducer<QuickFindState, QuickFindAction> = (
+  state: QuickFindState,
+  action: QuickFindAction
+) => {
   switch (action.type) {
     case "ARROW_DOWN":
       return {
@@ -58,19 +63,26 @@ function quickFindReducer(state: QuickFindState, action: QuickFindAction) {
         selectedIdx: wrapSelected(state.selectedIdx - 1, state.matches.length),
       };
     case "QUERY_CHANGE":
-      return { ...state, q: action.payload };
-    case "MATCHES_LOADED":
+      const q = action.payload;
       return {
         ...state,
-        matches: action.payload,
+        q,
+        matches: q === "" ? [] : state.matches,
+      };
+    case "MATCHES_LOADED":
+      const matches = action.payload;
+      return {
+        ...state,
+        matches,
+        selectedIdx: wrapSelected(state.selectedIdx, matches.length),
       };
     default:
       return state;
   }
-}
+};
 
 type QuickFindData = {
-  nouns: Array<Noun>;
+  matches: Array<Match>;
 };
 
 type QuickFindModalProps = {
@@ -93,7 +105,10 @@ const QuickFindModal: FunctionComponent<QuickFindModalProps> = ({
   );
   useEffect(() => {
     if (latestQuickFindData !== undefined)
-      dispatch({ type: "MATCHES_LOADED", payload: latestQuickFindData.nouns });
+      dispatch({
+        type: "MATCHES_LOADED",
+        payload: latestQuickFindData.matches,
+      });
   }, [latestQuickFindData]);
 
   useEffect(() => {
@@ -135,18 +150,18 @@ const QuickFindModal: FunctionComponent<QuickFindModalProps> = ({
         }}
       />
       {state.matches
-        ? state.matches.map((n, i) => (
+        ? state.matches.map((m, i) => (
             <a
-              key={n.id}
+              key={i}
               className={`px-6 py-3 ${
                 i === state.selectedIdx
                   ? "bg-violet-800 text-white"
                   : "bg-white"
               }`}
               ref={i === state.selectedIdx ? selectedRef : null}
-              href={`/campaigns/${campaignId}/nouns/${n.id}`}
+              href={m.href}
             >
-              {n.name}
+              {m.name}
             </a>
           ))
         : null}
