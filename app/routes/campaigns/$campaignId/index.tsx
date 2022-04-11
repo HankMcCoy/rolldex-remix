@@ -42,6 +42,7 @@ export default function ViewCampaign() {
         title={s.name}
         desc={s.summary}
         href={`/campaigns/${id}/sessions/${s.id}`}
+        deleteable
       />
     ),
     [id]
@@ -186,7 +187,10 @@ export let loader: LoaderFunction = async ({ params }): Promise<LoaderData> => {
       take: 3,
     }),
     db.noun.count({ where: { campaignId, nounType: "FACTION" } }),
-    db.session.findMany({ where: { campaignId } }),
+    db.session.findMany({
+      where: { campaignId },
+      orderBy: { createdAt: "desc" },
+    }),
     db.member.findMany({ where: { campaignId } }),
   ]);
   if (!campaign) throw new Response("Not Found", { status: 404 });

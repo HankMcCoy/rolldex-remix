@@ -35,7 +35,12 @@ export const LinkBox = ({ title, desc, href, deleteable }: Props) => {
           <XBtn
             type="submit"
             onClick={(e) => {
-              if (!window.confirm("YES?")) e.preventDefault();
+              if (
+                !window.confirm(
+                  `Are you sure you want to delete "${title}"? This is not reversable.`
+                )
+              )
+                e.preventDefault();
             }}
           />
         </Form>
