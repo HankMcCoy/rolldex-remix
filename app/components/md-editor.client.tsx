@@ -21,7 +21,7 @@ export class MdEditor extends React.Component<MdEditorProps, Readonly<{}>> {
   render() {
     return (
       <div
-        className="md-editor-root"
+        className="md-editor-root focus:ring-1"
         style={{ minHeight: this.props.minHeight }}
       >
         <textarea name={this.props.name} ref={this.textareaRef} />
@@ -29,7 +29,6 @@ export class MdEditor extends React.Component<MdEditorProps, Readonly<{}>> {
     );
   }
   componentDidMount() {
-    const { name, value, onChange } = this.props;
     this.simpleMde = new SimpleMdeImpl({
       spellChecker: false,
       element: this.textareaRef.current ?? undefined,
