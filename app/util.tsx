@@ -82,6 +82,11 @@ export function useHoverCombo(
         }
       }, delay);
     }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [isHoveringA, isHoveringB, delay]);
 
   return [refA, refB, isHovering];
