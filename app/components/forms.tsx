@@ -21,6 +21,7 @@ export const LabelRow: FunctionComponent<LabelRowProps> = ({
 interface TextFieldProps {
   label: string;
   name: string;
+  type?: "text" | "email";
   title?: string;
   defaultValue?: string;
 }
@@ -29,11 +30,12 @@ export const TextField: FunctionComponent<TextFieldProps> = ({
   title,
   name,
   defaultValue,
+  type = "text",
 }) => {
   return (
     <LabelRow label={label} title={title}>
       <input
-        type="text"
+        type={type}
         name={name}
         defaultValue={defaultValue}
         className="w-full"

@@ -10,21 +10,38 @@ interface Props {
   desc?: string;
   href: string;
   deleteable?: boolean;
+  asLink?: boolean;
 }
-export const LinkBox = ({ title, desc, href, deleteable }: Props) => {
+export const LinkBox = ({
+  title,
+  desc,
+  href,
+  deleteable,
+  asLink = true,
+}: Props) => {
+  const content = (
+    <>
+      <div
+        className={classNames(
+          "font-medium font-serif",
+          desc ? "pb-1" : undefined
+        )}
+      >
+        {title}
+      </div>
+      {desc ? <div>{desc}</div> : null}
+    </>
+  );
+  const contentClass = "flex flex-col flex-1 justify-center";
   return (
     <div className={`${linkBoxFrameClasses} pl-4 pr-3 py-3 flex align-center`}>
-      <Link to={href} className="flex-1">
-        <div
-          className={classNames(
-            "font-medium font-serif",
-            desc ? "pb-1" : undefined
-          )}
-        >
-          {title}
-        </div>
-        {desc ? <div>{desc}</div> : null}
-      </Link>
+      {asLink ? (
+        <Link to={href} className={contentClass}>
+          {content}
+        </Link>
+      ) : (
+        <div className={contentClass}>{content}</div>
+      )}
       {deleteable && (
         <Form
           method="delete"
@@ -39,8 +56,9 @@ export const LinkBox = ({ title, desc, href, deleteable }: Props) => {
                 !window.confirm(
                   `Are you sure you want to delete "${title}"? This is not reversable.`
                 )
-              )
+              ) {
                 e.preventDefault();
+              }
             }}
           />
         </Form>

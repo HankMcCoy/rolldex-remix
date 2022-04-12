@@ -66,10 +66,28 @@ export default function ViewCampaign() {
       <div className="flex space-x-6">
         <div className="flex-1 flex flex-col space-y-6">
           <TitledSection title="Summary">{campaign.summary}</TitledSection>
-          <TitledSection title="Members">
+          <TitledSection
+            title="Members"
+            controls={
+              <LinkButton
+                to={`/campaigns/${campaign.id}/members/invite`}
+                title="Add new campaign member"
+                style="lightSecondary"
+                size="small"
+              >
+                +
+              </LinkButton>
+            }
+          >
             <div className="flex flex-col space-y-2">
               {members.map((m) => (
-                <LinkBox key={m.id} title={m.email} href="#" />
+                <LinkBox
+                  key={m.id}
+                  href={`/campaigns/${campaign.id}/members/${m.id}`}
+                  asLink={false}
+                  title={m.email}
+                  deleteable
+                />
               ))}
             </div>
           </TitledSection>
