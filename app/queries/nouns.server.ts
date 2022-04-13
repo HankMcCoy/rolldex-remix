@@ -42,3 +42,24 @@ export async function deleteNoun({
   enforceWriteAccess({ campaignId, userId });
   await db.noun.delete({ where: { id: nounId } });
 }
+
+export async function createNoun({
+  userId,
+  fields,
+}: {
+  userId: string;
+  fields: { [k: string]: string };
+}): Promise<Noun> {
+  enforceWriteAccess({ campaignId: fields.campaignId, userId });
+  const noun = await db.noun.create({
+    data: {
+      campaignId: fields.campaignId,
+      name: fields.name,
+      summary: fields.summary,
+      nounType: fields.nounType,
+      notes: fields.notes,
+      privateNotes: fields.privateNotes,
+    },
+  });
+  return noun;
+}

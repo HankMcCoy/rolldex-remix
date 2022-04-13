@@ -11,6 +11,10 @@ import { TextField, TextareaField, LabelRow } from "~/components/forms";
 import { Campaign } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
+import { getCampaign } from "~/queries/campaigns.server";
+import { getParams } from "~/util";
+import { requireUserId } from "~/session.server";
+import { createNoun } from "~/queries/nouns.server";
 
 export default function AddNoun() {
   const { nounType, campaign, name } = useLoaderData<LoaderData>();
@@ -59,29 +63,23 @@ type LoaderData = {
   name: string | undefined;
 };
 export let loader: LoaderFunction = async ({ request, params }) => {
-  const { campaignId } = params;
+  const { campaignId } = getParams(params, ["campaignId"] as const);
+  const userId = await requireUserId(request);
 
   const url = new URL(request.url);
   const nounType = url.searchParams.get("nounType");
   const name = url.searchParams.get("name") || undefined;
-  if (!campaignId) throw new Error("nounId and campaignId required");
-  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
+
+  const campaign = await getCampaign({ campaignId, userId });
+
   return { nounType, campaign, name };
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
   const { fields } = await getFormFields({
     request,
   });
-  const noun = await db.noun.create({
-    data: {
-      campaignId: fields.campaignId,
-      name: fields.name,
-      summary: fields.summary,
-      nounType: fields.nounType,
-      notes: fields.notes,
-      privateNotes: fields.privateNotes,
-    },
-  });
+  const noun = await createNoun({ fields, userId });
   return redirect(`/campaigns/${fields.campaignId}/nouns/${noun.id}`);
 };
