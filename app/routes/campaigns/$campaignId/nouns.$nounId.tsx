@@ -19,6 +19,8 @@ import {
 
 import { db } from "~/db.server";
 import { getRelationsForNoun } from "~/queries/related.server";
+import { getNounAndCampaign } from "~/queries/nouns.server";
+import { getUserId, requireUserId } from "~/session.server";
 
 export default function ViewNoun() {
   const { noun, campaign, relations } = useLoaderData<LoaderData>();
@@ -115,17 +117,17 @@ type LoaderData = {
     sessions: Array<Session>;
   };
 };
-export let loader: LoaderFunction = async ({ params }) => {
+export let loader: LoaderFunction = async ({ params, request }) => {
   const { nounId, campaignId } = params;
   if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
 
-  const [noun, campaign, relations] = await Promise.all([
-    db.noun.findUnique({ where: { id: nounId } }),
-    db.campaign.findUnique({ where: { id: campaignId } }),
+  const userId = await requireUserId(request);
+  const [{ noun, campaign }, relations] = await Promise.all([
+    getNounAndCampaign({ nounId, campaignId, userId }),
     getRelationsForNoun({ nounId, campaignId }),
   ]);
 
-  if (!noun) throw new Response("Noun not found", { status: 404 });
+  if (!noun || !campaign) throw new Response("Not found", { status: 404 });
 
   return {
     noun,

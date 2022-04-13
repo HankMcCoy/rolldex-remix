@@ -16,7 +16,7 @@ const intersperse = <T extends unknown>(
 ) =>
   list.slice(1).reduce((a, item, i) => [...a, separator(i), item], [list[0]]);
 
-type SidebarProps = { user: User };
+type SidebarProps = { user?: User };
 export const Sidebar: FunctionComponent<SidebarProps> = ({ user }) => {
   const location = useLocation();
 
@@ -51,7 +51,7 @@ export const Sidebar: FunctionComponent<SidebarProps> = ({ user }) => {
             ))}
           </nav>
         </div>
-        <div className="p-2 text-gray-300 text-sm">{user.email}</div>
+        <div className="p-2 text-gray-300 text-sm">{user?.email}</div>
       </div>
     </div>
   );
@@ -93,7 +93,7 @@ export const PageHeader: FunctionComponent<PageHeaderProps> = ({
   );
 };
 
-type PageProps = { user: User };
+type PageProps = { user?: User };
 export const Page: FunctionComponent<PageProps> = ({ children, user }) => {
   return (
     <>

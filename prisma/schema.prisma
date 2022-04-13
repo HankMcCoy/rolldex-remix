@@ -64,9 +64,10 @@ model Member {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   campaignId String
-  email      String   @unique
+  email      String
   memberType String
   userId     String?
 
   user User? @relation(fields: [userId], references: [id])
+  @@unique([campaignId, email])
 }
