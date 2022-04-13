@@ -25,6 +25,29 @@ export async function getCampaign({
   return campaign;
 }
 
+export async function getCampaignList({
+  userId,
+}: {
+  userId: string;
+}): Promise<Array<Campaign>> {
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("User not found");
+
+  const campaignsUserCreated = await db.campaign.findMany({
+    where: { createdById: userId },
+  });
+  const campaignsUserIsMemberOf = await db.member.findMany({
+    where: { email: user.email },
+    select: {
+      campaign: true,
+    },
+  });
+
+  return campaignsUserCreated.concat(
+    campaignsUserIsMemberOf.map((x) => x.campaign)
+  );
+}
+
 export async function enforceWriteAccess({
   campaignId,
   userId,

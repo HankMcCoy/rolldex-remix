@@ -29,6 +29,7 @@ model Campaign {
 
   createdBy User      @relation(fields: [createdById], references: [id])
   sessions  Session[]
+  members   Member[]
   nouns     Noun[]
 }
 
@@ -69,5 +70,6 @@ model Member {
   userId     String?
 
   user User? @relation(fields: [userId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id])
   @@unique([campaignId, email])
 }

@@ -3,15 +3,14 @@ import { useLoaderData, LoaderFunction } from "remix";
 import { Content, LinkButton } from "~/components/layout";
 import { LinkBox } from "~/components/link-box";
 import { db } from "~/db.server";
+import { getCampaignList } from "~/queries/campaigns.server";
 import { requireUserId } from "~/session.server";
 interface LoaderData {
   campaigns: Array<Campaign>;
 }
 export let loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const campaigns = await db.campaign.findMany({
-    where: { createdById: userId },
-  });
+  const campaigns = await getCampaignList({ userId });
   return { campaigns };
 };
 
