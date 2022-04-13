@@ -1,6 +1,6 @@
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
-import { getCampaign } from "./campaigns.server";
+import { enforceWriteAccess, getCampaign } from "./campaigns.server";
 
 function enforceMemberVisibility(noun: Noun): Noun {
   return {
@@ -28,4 +28,17 @@ export async function getNounAndCampaign({
     throw new Error("Noun's campaign does not match provided campaign");
 
   return { noun: enforceMemberVisibility(noun), campaign };
+}
+
+export async function deleteNoun({
+  nounId,
+  campaignId,
+  userId,
+}: {
+  nounId: string;
+  campaignId: string;
+  userId: string;
+}): Promise<void> {
+  enforceWriteAccess({ campaignId, userId });
+  await db.noun.delete({ where: { id: nounId } });
 }

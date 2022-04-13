@@ -16,6 +16,10 @@ import {
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
+import { getNounAndCampaign } from "~/queries/nouns.server";
+import { requireUser, requireUserId } from "~/session.server";
+import { enforceWriteAccess } from "~/queries/campaigns.server";
+import { getParams } from "~/util";
 
 export const meta: MetaFunction = ({
   data,
@@ -80,20 +84,29 @@ type LoaderData = {
   noun: Noun;
   campaign: Campaign;
 };
-export let loader: LoaderFunction = async ({ params }) => {
-  const { nounId, campaignId } = params;
-  if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
-  const [campaign, noun] = await Promise.all([
-    db.campaign.findUnique({ where: { id: campaignId } }),
-    db.noun.findUnique({ where: { id: nounId } }),
-  ]);
+export let loader: LoaderFunction = async ({ params, request }) => {
+  const userId = await requireUserId(request);
+  const { nounId, campaignId } = getParams(params, [
+    "nounId",
+    "campaignId",
+  ] as const);
+
+  const { noun, campaign } = await getNounAndCampaign({
+    nounId,
+    campaignId,
+    userId,
+  });
+
   return { noun, campaign };
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
   const {
     fields: { campaignId, nounId, name, summary, notes, privateNotes },
   } = await getFormFields({ request });
+
+  enforceWriteAccess({ campaignId, userId });
 
   await db.noun.update({
     where: { id: nounId },

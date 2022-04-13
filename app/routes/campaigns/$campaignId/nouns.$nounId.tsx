@@ -19,8 +19,10 @@ import {
 
 import { db } from "~/db.server";
 import { getRelationsForNoun } from "~/queries/related.server";
-import { getNounAndCampaign } from "~/queries/nouns.server";
+import { deleteNoun, getNounAndCampaign } from "~/queries/nouns.server";
 import { getUserId, requireUserId } from "~/session.server";
+import { Params } from "react-router-dom";
+import { getParams } from "~/util";
 
 export default function ViewNoun() {
   const { noun, campaign, relations } = useLoaderData<LoaderData>();
@@ -138,8 +140,14 @@ export let loader: LoaderFunction = async ({ params, request }) => {
 
 export let action: ActionFunction = async ({ request, params }) => {
   if (request.method === "DELETE") {
-    const { nounId, campaignId } = params;
-    await db.noun.delete({ where: { id: nounId } });
+    const userId = await requireUserId(request);
+
+    const { nounId, campaignId } = getParams(params, [
+      "nounId",
+      "campaignId",
+    ] as const);
+
+    deleteNoun({ nounId, campaignId, userId });
     return redirect(`/campaigns/${campaignId}`);
   }
 

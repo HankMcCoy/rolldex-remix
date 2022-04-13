@@ -24,3 +24,20 @@ export async function getCampaign({
   if (!member) throw new Error("Cannot access campaign");
   return campaign;
 }
+
+export async function enforceWriteAccess({
+  campaignId,
+  userId,
+}: {
+  campaignId: string;
+  userId: string;
+}): Promise<void> {
+  const [campaign, user] = await Promise.all([
+    db.campaign.findUnique({ where: { id: campaignId } }),
+    db.user.findUnique({ where: { id: userId } }),
+  ]);
+
+  if (!campaign || !user) throw new Error("User/campaign not found");
+  if (campaign.createdById !== userId)
+    throw new Error("User does not have write access to this campaign");
+}

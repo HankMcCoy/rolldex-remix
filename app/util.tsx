@@ -1,5 +1,6 @@
 import { useEffect, useRef, MutableRefObject, useState } from "react";
 import isHotkey from "is-hotkey";
+import { Params } from "react-router-dom";
 
 export { useClickHotkey } from "./util/keyboard-shortcuts";
 
@@ -90,4 +91,22 @@ export function useHoverCombo(
   }, [isHoveringA, isHoveringB, delay]);
 
   return [refA, refB, isHovering];
+}
+
+export function getParams<T extends ReadonlyArray<string>>(
+  params: Params<string>,
+  keys: T
+): {
+  [K in T extends ReadonlyArray<infer U> ? U : never]: string;
+} {
+  type Result = {
+    [K in T extends ReadonlyArray<infer U> ? U : never]: string;
+  };
+  return keys.reduce((acc, key): Result => {
+    if (!params[key]) throw new Error(`Expected param '${key}' to exist`);
+    return {
+      ...acc,
+      [key]: params[key],
+    };
+  }, {} as Result);
 }
