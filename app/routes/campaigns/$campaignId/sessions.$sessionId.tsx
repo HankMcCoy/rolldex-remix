@@ -9,10 +9,15 @@ import {
 } from "remix";
 import { TitledSection } from "~/components/titled-section";
 import { Campaign, Noun, Session } from "@prisma/client";
-import { db } from "~/db.server";
 import { getRelationsForSession } from "~/queries/related.server";
 import { RelatedThings, RelatedThing } from "~/components/related-things";
 import { useCallback } from "react";
+import {
+  deleteSession,
+  getSessionAndCampaign,
+} from "~/queries/sessions.server";
+import { requireUserId } from "~/session.server";
+import { getParams } from "~/util";
 
 export default function ViewSession() {
   const { session, campaign, relations } = useLoaderData<LoaderData>();
@@ -95,15 +100,16 @@ type LoaderData = {
     factions: Array<Noun>;
   };
 };
-export let loader: LoaderFunction = async ({ params }) => {
-  const { sessionId, campaignId } = params;
-  if (!sessionId || !campaignId)
-    throw new Error("nounId and campaignId required");
+export let loader: LoaderFunction = async ({ request, params }) => {
+  const { sessionId, campaignId } = getParams(params, [
+    "sessionId",
+    "campaignId",
+  ] as const);
+  const userId = await requireUserId(request);
 
-  const [session, campaign, relations] = await Promise.all([
-    db.session.findUnique({ where: { id: sessionId } }),
-    db.campaign.findUnique({ where: { id: campaignId } }),
-    getRelationsForSession({ sessionId, campaignId }),
+  const [{ session, campaign }, relations] = await Promise.all([
+    getSessionAndCampaign({ sessionId, campaignId, userId }),
+    getRelationsForSession({ sessionId, campaignId, userId }),
   ]);
 
   return { session, campaign, relations };
@@ -111,8 +117,14 @@ export let loader: LoaderFunction = async ({ params }) => {
 
 export let action: ActionFunction = async ({ request, params }) => {
   if (request.method === "DELETE") {
-    const { sessionId, campaignId } = params;
-    await db.session.delete({ where: { id: sessionId } });
+    const { sessionId, campaignId } = getParams(params, [
+      "sessionId",
+      "campaignId",
+    ] as const);
+    const userId = await requireUserId(request);
+
+    deleteSession({ sessionId, campaignId, userId });
+
     return redirect(`/campaigns/${campaignId}`);
   }
 

@@ -1,93 +1,94 @@
-import { Campaign, Noun, Prisma } from "@prisma/client";
+import { Campaign, Session, Prisma } from "@prisma/client";
 import { db } from "~/db.server";
 import { enforceWriteAccess, getCampaign } from "./campaigns.server";
 
-function enforceMemberVisibility(noun: Noun): Noun {
+function enforceMemberVisibility(session: Session): Session {
   return {
-    ...noun,
+    ...session,
     privateNotes: "",
   };
 }
-export async function getNounAndCampaign({
-  nounId,
+export async function getSessionAndCampaign({
+  sessionId,
   campaignId,
   userId,
 }: {
-  nounId: string;
+  sessionId: string;
   campaignId: string;
   userId: string;
-}): Promise<{ noun: Noun | null; campaign: Campaign | null }> {
-  const [noun, campaign] = await Promise.all([
-    db.noun.findUnique({ where: { id: nounId } }),
+}): Promise<{ session: Session | null; campaign: Campaign | null }> {
+  const [session, campaign] = await Promise.all([
+    db.session.findUnique({ where: { id: sessionId } }),
     getCampaign({ campaignId, userId }),
   ]);
 
   // TODO: Make errors better
-  if (!noun || !campaign) return { noun: null, campaign: null };
-  if (noun.campaignId !== campaign.id)
-    throw new Error("Noun's campaign does not match provided campaign");
+  if (!session || !campaign) return { session: null, campaign: null };
+  if (session.campaignId !== campaign.id)
+    throw new Error("Session's campaign does not match provided campaign");
 
   return {
-    noun:
-      userId === campaign.createdById ? noun : enforceMemberVisibility(noun),
+    session:
+      userId === campaign.createdById
+        ? session
+        : enforceMemberVisibility(session),
     campaign,
   };
 }
 
-export async function deleteNoun({
-  nounId,
+export async function deleteSession({
+  sessionId,
   campaignId,
   userId,
 }: {
-  nounId: string;
+  sessionId: string;
   campaignId: string;
   userId: string;
 }): Promise<void> {
   await enforceWriteAccess({ campaignId, userId });
-  await db.noun.delete({ where: { id: nounId } });
+  await db.session.delete({ where: { id: sessionId } });
 }
 
-export async function createNoun({
+export async function createSession({
   userId,
   fields,
 }: {
   userId: string;
   fields: { [k: string]: string };
-}): Promise<Noun> {
+}): Promise<Session> {
   await enforceWriteAccess({ campaignId: fields.campaignId, userId });
-  const noun = await db.noun.create({
+  const session = await db.session.create({
     data: {
       campaignId: fields.campaignId,
       name: fields.name,
       summary: fields.summary,
-      nounType: fields.nounType,
       notes: fields.notes,
       privateNotes: fields.privateNotes,
     },
   });
-  return noun;
+  return session;
 }
 
-export async function updateNoun({
+export async function updateSession({
   userId,
   campaignId,
-  nounId,
+  sessionId,
   data: { name, summary, notes, privateNotes },
 }: {
   userId: string;
   campaignId: string;
-  nounId: string;
+  sessionId: string;
   data: {
     name: string;
     summary: string;
     notes: string;
     privateNotes: string;
   };
-}): Promise<Noun> {
+}): Promise<Session> {
   await enforceWriteAccess({ campaignId, userId });
 
-  return await db.noun.update({
-    where: { id: nounId },
+  return await db.session.update({
+    where: { id: sessionId },
     data: { name, summary, notes, privateNotes },
   });
 }

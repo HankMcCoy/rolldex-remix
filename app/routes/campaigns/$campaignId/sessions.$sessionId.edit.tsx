@@ -8,11 +8,13 @@ import {
 } from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { Campaign, Session } from "@prisma/client";
-import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
-import { getCampaign } from "~/queries/campaigns.server";
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
+import {
+  getSessionAndCampaign,
+  updateSession,
+} from "~/queries/sessions.server";
 
 export default function EditSession() {
   const { session, campaign } = useLoaderData<LoaderData>();
@@ -69,20 +71,24 @@ export let loader: LoaderFunction = async ({ request, params }) => {
     "campaignId",
   ] as const);
   const userId = await requireUserId(request);
-  const [campaign, session] = await Promise.all([
-    getCampaign({ campaignId, userId }),
-    db.session.findUnique({ where: { id: sessionId } }),
-  ]);
+  const { campaign, session } = await getSessionAndCampaign({
+    sessionId,
+    campaignId,
+    userId,
+  });
   return { session, campaign };
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
   const {
     fields: { campaignId, sessionId, name, summary, notes, privateNotes },
   } = await getFormFields({ request });
 
-  await db.session.update({
-    where: { id: sessionId },
+  await updateSession({
+    userId,
+    campaignId,
+    sessionId,
     data: { name, summary, notes, privateNotes },
   });
 

@@ -8,8 +8,11 @@ import {
 } from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { Campaign } from "@prisma/client";
-import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
+import { createSession } from "~/queries/sessions.server";
+import { requireUserId } from "~/session.server";
+import { getCampaign } from "~/queries/campaigns.server";
+import { getParams } from "~/util";
 
 interface Props {
   params: {
@@ -49,25 +52,21 @@ type LoaderData = {
   campaign: Campaign;
 };
 export let loader: LoaderFunction = async ({ request, params }) => {
-  const { campaignId } = params;
+  const { campaignId } = getParams(params, ["campaignId"] as const);
+  const userId = await requireUserId(request);
 
-  if (!campaignId) throw new Error("sessionId and campaignId required");
-  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
+  const campaign = await getCampaign({ campaignId, userId });
+
   return { campaign };
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
   const { fields } = await getFormFields({
     request,
   });
-  const session = await db.session.create({
-    data: {
-      campaignId: fields.campaignId,
-      name: fields.name,
-      summary: fields.summary,
-      notes: fields.notes,
-      privateNotes: fields.privateNotes,
-    },
-  });
+
+  const session = await createSession({ userId, fields });
+
   return redirect(`/campaigns/${fields.campaignId}/sessions/${session.id}`);
 };

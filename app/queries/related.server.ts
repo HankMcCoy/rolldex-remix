@@ -1,5 +1,6 @@
 import { Noun, Session } from "@prisma/client";
 import { db } from "~/db.server";
+import { getCampaign } from "./campaigns.server";
 
 type Searchable = {
   name: string;
@@ -77,11 +78,15 @@ export async function getRelationsForNoun({
 type GetRelationsForSessionArgs = {
   sessionId: string;
   campaignId: string;
+  userId: string;
 };
 export async function getRelationsForSession({
   sessionId,
   campaignId,
+  userId,
 }: GetRelationsForSessionArgs): Promise<NounsByType> {
+  await getCampaign({ campaignId, userId });
+
   const [session, allNouns] = await Promise.all([
     db.session.findUnique({ where: { id: sessionId } }),
     db.noun.findMany({ where: { campaignId } }),

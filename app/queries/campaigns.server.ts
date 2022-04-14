@@ -8,21 +8,33 @@ export async function getCampaign({
   campaignId: string;
   userId: string;
 }): Promise<Campaign | null> {
-  const [campaign, user] = await Promise.all([
-    db.campaign.findUnique({ where: { id: campaignId } }),
-    db.user.findUnique({ where: { id: userId } }),
-  ]);
-  if (!campaign || !user) return null;
+  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
+  if (!campaign) return null;
+
   if (campaign.createdById === userId) return campaign;
+
+  const isMember = checkIsMember({ campaignId, userId });
+  if (!isMember) throw new Error("Cannot access campaign");
+
+  return campaign;
+}
+
+export async function checkIsMember({
+  campaignId,
+  userId,
+}: {
+  campaignId: string;
+  userId: string;
+}) {
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("User not found");
 
   const member = await db.member.findUnique({
     where: {
       campaignId_email: { campaignId, email: user.email },
     },
   });
-
-  if (!member) throw new Error("Cannot access campaign");
-  return campaign;
+  return member !== null;
 }
 
 export async function getCampaignList({
