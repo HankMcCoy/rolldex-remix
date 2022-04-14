@@ -1,24 +1,35 @@
 import { json, LoaderFunction } from "remix";
-import { db } from "~/db.server";
+import { getNounsForCampaign } from "~/queries/nouns.server";
+import { getSessionsForCampaign } from "~/queries/sessions.server";
+import { requireUserId } from "~/session.server";
+import { getParams, getQueryParams } from "~/util";
 
 type Match = {
   name: string;
   href: string;
 };
 export let loader: LoaderFunction = async ({ params, request }) => {
-  const { campaignId } = params;
-  const search = new URL(request.url).searchParams.get("q");
-  if (search === null || search === "")
+  const userId = await requireUserId(request);
+  const { campaignId } = getParams(params, ["campaignId"] as const);
+  const { q } = getQueryParams(request, ["q"] as const);
+  if (q === "")
     return json({ err_code: "MISSING QUERY PARAM" }, { status: 400 });
 
-  const nouns = await db.noun.findMany({
-    where: { campaignId, name: { contains: search } },
-    take: 5,
-  });
-  const sessions = await db.session.findMany({
-    where: { campaignId, name: { contains: search } },
-    take: 5,
-  });
+  const [nouns, sessions] = await Promise.all([
+    getNounsForCampaign({
+      campaignId,
+      userId,
+      where: { name: { contains: q } },
+      take: 5,
+    }),
+    getSessionsForCampaign({
+      campaignId,
+      userId,
+      where: { name: { contains: q } },
+      take: 5,
+    }),
+  ]);
+
   const matches: Array<Match> = [
     ...nouns.map((n) => ({
       name: n.name,

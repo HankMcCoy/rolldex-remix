@@ -14,19 +14,26 @@ function enforceMemberVisibility(session: Session): Session {
   };
 }
 
-export async function getSessions({
+export async function getSessionsForCampaign({
   campaignId,
   userId,
+  where,
+  orderBy,
+  take,
 }: {
   campaignId: string;
   userId: string;
+  where?: Prisma.SessionWhereInput;
+  orderBy?: Prisma.Enumerable<Prisma.SessionOrderByWithRelationInput>;
+  take?: number;
 }): Promise<Session[]> {
   const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
   if (accessLevel === "NONE") throw new Error("Not authorized to access");
 
   const sessions = await db.session.findMany({
-    where: { campaignId },
-    orderBy: { createdAt: "desc" },
+    where: { ...where, campaignId },
+    orderBy: { createdAt: "desc", ...orderBy },
+    take,
   });
 
   if (accessLevel === "READ_ONLY") {

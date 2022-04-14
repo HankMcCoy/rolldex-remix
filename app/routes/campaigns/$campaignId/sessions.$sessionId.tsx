@@ -7,7 +7,10 @@ import {
   redirect,
   useLoaderData,
 } from "remix";
-import { TitledSection } from "~/components/titled-section";
+import {
+  PrivateTitledSection,
+  TitledSection,
+} from "~/components/titled-section";
 import { Campaign, Noun, Session } from "@prisma/client";
 import { getRelationsForSession } from "~/queries/related.server";
 import { RelatedThings, RelatedThing } from "~/components/related-things";
@@ -18,13 +21,16 @@ import {
 } from "~/queries/sessions.server";
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
+import { getCampaignAccessLevel } from "~/queries/campaigns.server";
 
 export default function ViewSession() {
-  const { session, campaign, relations } = useLoaderData<LoaderData>();
+  const { accessLevel, session, campaign, relations } =
+    useLoaderData<LoaderData>();
   const getNounUrl = useCallback(
     (t: RelatedThing) => `/campaigns/${campaign.id}/nouns/${t.id}`,
     [campaign.id]
   );
+  const isAdmin = accessLevel === "ADMIN";
 
   return (
     <Content
@@ -34,15 +40,17 @@ export default function ViewSession() {
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
       ]}
       controls={
-        <LinkButton
-          to={`/campaigns/${campaign.id}/sessions/${session.id}/edit`}
-          data-id="edit"
-          title="Edit (Ctrl/Cmd-E)"
-          shortcut="mod+e"
-          style="darkPrimary"
-        >
-          Edit
-        </LinkButton>
+        isAdmin ? (
+          <LinkButton
+            to={`/campaigns/${campaign.id}/sessions/${session.id}/edit`}
+            data-id="edit"
+            title="Edit (Ctrl/Cmd-E)"
+            shortcut="mod+e"
+            style="darkPrimary"
+          >
+            Edit
+          </LinkButton>
+        ) : null
       }
       sidePanel={
         <SidePanel>
@@ -75,9 +83,11 @@ export default function ViewSession() {
           <TitledSection title="Notes">
             <Markdown>{session.notes}</Markdown>
           </TitledSection>
-          <TitledSection title="Private Notes">
-            <Markdown>{session.privateNotes}</Markdown>
-          </TitledSection>
+          {isAdmin && (
+            <PrivateTitledSection title="Private Notes">
+              <Markdown>{session.privateNotes}</Markdown>
+            </PrivateTitledSection>
+          )}
         </div>
       </div>
     </Content>
@@ -91,6 +101,7 @@ export const meta: MetaFunction = ({
 }) => ({ title: data ? `${data.session.name} - ${data.campaign.name}` : "" });
 
 type LoaderData = {
+  accessLevel: string;
   session: Session;
   campaign: Campaign;
   relations: {
@@ -107,12 +118,13 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   ] as const);
   const userId = await requireUserId(request);
 
-  const [{ session, campaign }, relations] = await Promise.all([
+  const [accessLevel, { session, campaign }, relations] = await Promise.all([
+    getCampaignAccessLevel({ campaignId, userId }),
     getSessionAndCampaign({ sessionId, campaignId, userId }),
     getRelationsForSession({ sessionId, campaignId, userId }),
   ]);
 
-  return { session, campaign, relations };
+  return { accessLevel, session, campaign, relations };
 };
 
 export let action: ActionFunction = async ({ request, params }) => {

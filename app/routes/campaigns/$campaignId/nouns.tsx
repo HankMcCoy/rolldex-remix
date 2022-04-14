@@ -7,14 +7,18 @@ import {
 import { Link, LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { LinkBox } from "~/components/link-box";
 import { Campaign, Noun } from "@prisma/client";
-import { db } from "~/db.server";
-import { getCampaign } from "~/queries/campaigns.server";
+import {
+  getCampaign,
+  getCampaignAccessLevel,
+} from "~/queries/campaigns.server";
 import { getParams, getQueryParams } from "~/util";
 import { requireUserId } from "~/session.server";
 import { getNounsForCampaign } from "~/queries/nouns.server";
 
 export default function NounsList() {
-  const { nounType, nounsOfType, campaign } = useLoaderData<LoaderData>();
+  const { accessLevel, nounType, nounsOfType, campaign } =
+    useLoaderData<LoaderData>();
+  const isAdmin = accessLevel === "ADMIN";
 
   return (
     <Content
@@ -24,11 +28,13 @@ export default function NounsList() {
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
       ]}
       controls={
-        <Link
-          to={`/campaigns/${campaign.id}/nouns/add?nounType=${nounTypeUrlFragment[nounType]}`}
-        >
-          Add
-        </Link>
+        isAdmin ? (
+          <Link
+            to={`/campaigns/${campaign.id}/nouns/add?nounType=${nounTypeUrlFragment[nounType]}`}
+          >
+            Add
+          </Link>
+        ) : null
       }
     >
       <div className="flex space-x-6">
@@ -58,6 +64,7 @@ export const meta: MetaFunction = ({
 });
 
 type LoaderData = {
+  accessLevel: string;
   nounType: string;
   nounsOfType: Array<Noun>;
   campaign: Campaign;
@@ -71,7 +78,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
   if (!nounType) throw new Error("Invalid nounType");
 
-  const [campaign, nounsOfType] = await Promise.all([
+  const [accessLevel, campaign, nounsOfType] = await Promise.all([
+    getCampaignAccessLevel({ campaignId, userId }),
     getCampaign({ campaignId, userId }),
     getNounsForCampaign({
       campaignId,
@@ -81,5 +89,5 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     }),
   ]);
 
-  return { nounType, nounsOfType, campaign };
+  return { accessLevel, nounType, nounsOfType, campaign };
 };

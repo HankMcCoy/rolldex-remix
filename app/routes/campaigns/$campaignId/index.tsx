@@ -11,11 +11,13 @@ import { getNounsForCampaign } from "~/queries/nouns.server";
 import { getParams } from "~/util";
 import { requireUserId } from "~/session.server";
 import { getMembers } from "~/queries/members.server";
-import { getSessions } from "~/queries/sessions.server";
+import { getSessionsForCampaign } from "~/queries/sessions.server";
+import { getCampaignAccessLevel } from "~/queries/campaigns.server";
 
 export default function ViewCampaign() {
   const {
     campaign,
+    accessLevel,
     id,
     people,
     numPeople,
@@ -28,6 +30,7 @@ export default function ViewCampaign() {
     sessions,
     members,
   } = useLoaderData<LoaderData>();
+  const isAdmin = accessLevel === "ADMIN";
   const getNounEl = useCallback(
     (n: Noun) => (
       <LinkBox
@@ -35,7 +38,7 @@ export default function ViewCampaign() {
         title={n.name}
         desc={n.summary}
         href={`/campaigns/${id}/nouns/${n.id}`}
-        deleteable
+        deleteable={isAdmin}
       />
     ),
     [id]
@@ -47,7 +50,7 @@ export default function ViewCampaign() {
         title={s.name}
         desc={s.summary}
         href={`/campaigns/${id}/sessions/${s.id}`}
-        deleteable
+        deleteable={isAdmin}
       />
     ),
     [id]
@@ -58,14 +61,16 @@ export default function ViewCampaign() {
       heading={campaign.name}
       breadcrumbs={[{ text: "Campaigns", href: "/campaigns" }]}
       controls={
-        <LinkButton
-          to={`/campaigns/${id}/edit`}
-          title={"Edit this campaign"}
-          shortcut="mod+e"
-          style="darkSecondary"
-        >
-          Edit
-        </LinkButton>
+        isAdmin ? (
+          <LinkButton
+            to={`/campaigns/${id}/edit`}
+            title={"Edit this campaign"}
+            shortcut="mod+e"
+            style="darkSecondary"
+          >
+            Edit
+          </LinkButton>
+        ) : null
       }
     >
       <div className="flex space-x-6">
@@ -74,14 +79,16 @@ export default function ViewCampaign() {
           <TitledSection
             title="Members"
             controls={
-              <LinkButton
-                to={`/campaigns/${campaign.id}/members/invite`}
-                title="Add new campaign member"
-                style="lightSecondary"
-                size="small"
-              >
-                +
-              </LinkButton>
+              isAdmin ? (
+                <LinkButton
+                  to={`/campaigns/${campaign.id}/members/invite`}
+                  title="Add new campaign member"
+                  style="lightSecondary"
+                  size="small"
+                >
+                  +
+                </LinkButton>
+              ) : null
             }
           >
             <div className="flex flex-col space-y-2">
@@ -91,7 +98,7 @@ export default function ViewCampaign() {
                   href={`/campaigns/${campaign.id}/members/${m.id}`}
                   asLink={false}
                   title={m.email}
-                  deleteable
+                  deleteable={isAdmin}
                 />
               ))}
             </div>
@@ -103,6 +110,7 @@ export default function ViewCampaign() {
             entities={sessions}
             count={sessions.length}
             getListItem={getSessionEl}
+            canAdd={isAdmin}
           />
         </div>
         <div className="flex-1 flex flex-col space-y-6">
@@ -114,6 +122,7 @@ export default function ViewCampaign() {
             entities={people}
             count={numPeople}
             getListItem={getNounEl}
+            canAdd={isAdmin}
           />
           <AddableList
             title="Factions"
@@ -123,6 +132,7 @@ export default function ViewCampaign() {
             entities={factions}
             count={numFactions}
             getListItem={getNounEl}
+            canAdd={isAdmin}
           />
           <AddableList
             title="Places"
@@ -132,6 +142,7 @@ export default function ViewCampaign() {
             entities={places}
             count={numPlaces}
             getListItem={getNounEl}
+            canAdd={isAdmin}
           />
           <AddableList
             title="Things"
@@ -141,6 +152,7 @@ export default function ViewCampaign() {
             entities={things}
             count={numThings}
             getListItem={getNounEl}
+            canAdd={isAdmin}
           />
         </div>
       </div>
@@ -157,6 +169,7 @@ export const meta: MetaFunction = ({
 type LoaderData = {
   id: string;
   campaign: Campaign;
+  accessLevel: string;
   people: Array<Noun>;
   numPeople: number;
   places: Array<Noun>;
@@ -185,6 +198,7 @@ export let loader: LoaderFunction = async ({
 
   const [
     campaign,
+    accessLevel,
     people,
     numPeople,
     places,
@@ -197,6 +211,7 @@ export let loader: LoaderFunction = async ({
     members,
   ] = await Promise.all([
     db.campaign.findUnique({ where: { id: campaignId } }),
+    getCampaignAccessLevel({ campaignId, userId }),
     getNounsByType("PERSON"),
     db.noun.count({ where: { campaignId, nounType: "PERSON" } }),
     getNounsByType("PLACE"),
@@ -205,13 +220,14 @@ export let loader: LoaderFunction = async ({
     db.noun.count({ where: { campaignId, nounType: "THING" } }),
     getNounsByType("FACTION"),
     db.noun.count({ where: { campaignId, nounType: "FACTION" } }),
-    getSessions({ campaignId, userId }),
+    getSessionsForCampaign({ campaignId, userId }),
     getMembers({ campaignId, userId }),
   ]);
   if (!campaign) throw new Response("Not Found", { status: 404 });
 
   return {
     campaign,
+    accessLevel,
     id: campaignId,
     people,
     numPeople,

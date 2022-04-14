@@ -21,13 +21,16 @@ import { getRelationsForNoun } from "~/queries/related.server";
 import { deleteNoun, getNounAndCampaign } from "~/queries/nouns.server";
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
+import { getCampaignAccessLevel } from "~/queries/campaigns.server";
 
 export default function ViewNoun() {
-  const { noun, campaign, relations } = useLoaderData<LoaderData>();
+  const { noun, accessLevel, campaign, relations } =
+    useLoaderData<LoaderData>();
   const getNounUrl = useCallback(
     (t: RelatedThing) => `/campaigns/${campaign.id}/nouns/${t.id}`,
     [campaign.id]
   );
+  const isAdmin = accessLevel === "ADMIN";
 
   return (
     <Content
@@ -43,15 +46,17 @@ export default function ViewNoun() {
         },
       ]}
       controls={
-        <LinkButton
-          to={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
-          data-id="edit"
-          title="Edit (Ctrl/Cmd-E)"
-          shortcut="mod+e"
-          style="darkPrimary"
-        >
-          Edit
-        </LinkButton>
+        isAdmin ? (
+          <LinkButton
+            to={`/campaigns/${campaign.id}/nouns/${noun.id}/edit`}
+            data-id="edit"
+            title="Edit (Ctrl/Cmd-E)"
+            shortcut="mod+e"
+            style="darkPrimary"
+          >
+            Edit
+          </LinkButton>
+        ) : null
       }
       sidePanel={
         <SidePanel>
@@ -89,9 +94,11 @@ export default function ViewNoun() {
           <TitledSection title="Notes">
             <Markdown>{noun.notes}</Markdown>
           </TitledSection>
-          <PrivateTitledSection title="Private Notes">
-            <Markdown>{noun.privateNotes || "--"}</Markdown>
-          </PrivateTitledSection>
+          {isAdmin && (
+            <PrivateTitledSection title="Private Notes">
+              <Markdown>{noun.privateNotes || "--"}</Markdown>
+            </PrivateTitledSection>
+          )}
         </div>
       </div>
     </Content>
@@ -109,6 +116,7 @@ export const meta: MetaFunction = ({
 type LoaderData = {
   noun: Noun;
   campaign: Campaign;
+  accessLevel: string;
   relations: {
     people: Array<Noun>;
     places: Array<Noun>;
@@ -118,11 +126,14 @@ type LoaderData = {
   };
 };
 export let loader: LoaderFunction = async ({ params, request }) => {
-  const { nounId, campaignId } = params;
-  if (!nounId || !campaignId) throw new Error("nounId and campaignId required");
-
+  const { nounId, campaignId } = getParams(params, [
+    "nounId",
+    "campaignId",
+  ] as const);
   const userId = await requireUserId(request);
-  const [{ noun, campaign }, relations] = await Promise.all([
+
+  const [accessLevel, { noun, campaign }, relations] = await Promise.all([
+    getCampaignAccessLevel({ campaignId, userId }),
     getNounAndCampaign({ nounId, campaignId, userId }),
     getRelationsForNoun({ nounId, campaignId }),
   ]);
@@ -132,6 +143,7 @@ export let loader: LoaderFunction = async ({ params, request }) => {
   return {
     noun,
     campaign,
+    accessLevel,
     relations,
   };
 };
