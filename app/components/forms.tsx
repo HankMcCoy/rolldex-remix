@@ -10,12 +10,12 @@ export const LabelRow: FunctionComponent<LabelRowProps> = ({
   title,
   children,
 }) => (
-  <p>
+  <div>
     <label title={title ?? label}>
       <span className="block text-lg font-serif">{label}</span>
       {children}
     </label>
-  </p>
+  </div>
 );
 
 interface TextFieldProps {
