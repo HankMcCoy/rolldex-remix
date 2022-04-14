@@ -7,6 +7,11 @@ import { AddableList } from "~/components/addable-list";
 import { LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { Campaign, Noun, Member, Session } from "@prisma/client";
 import { db } from "~/db.server";
+import { getNounsForCampaign } from "~/queries/nouns.server";
+import { getParams } from "~/util";
+import { requireUserId } from "~/session.server";
+import { getMembers } from "~/queries/members.server";
+import { getSessions } from "~/queries/sessions.server";
 
 export default function ViewCampaign() {
   const {
@@ -163,9 +168,20 @@ type LoaderData = {
   members: Array<Member>;
   sessions: Array<Session>;
 };
-export let loader: LoaderFunction = async ({ params }): Promise<LoaderData> => {
-  const { campaignId } = params;
-  if (!campaignId) throw new Response("Bad Request", { status: 400 });
+export let loader: LoaderFunction = async ({
+  request,
+  params,
+}): Promise<LoaderData> => {
+  const { campaignId } = getParams(params, ["campaignId"] as const);
+  const userId = await requireUserId(request);
+  const getNounsByType = (nounType: string) =>
+    getNounsForCampaign({
+      campaignId,
+      userId,
+      where: { nounType },
+      orderBy: { name: "asc" },
+      take: 3,
+    });
 
   const [
     campaign,
@@ -181,35 +197,16 @@ export let loader: LoaderFunction = async ({ params }): Promise<LoaderData> => {
     members,
   ] = await Promise.all([
     db.campaign.findUnique({ where: { id: campaignId } }),
-    db.noun.findMany({
-      where: { campaignId, nounType: "PERSON" },
-      orderBy: { name: "asc" },
-      take: 3,
-    }),
+    getNounsByType("PERSON"),
     db.noun.count({ where: { campaignId, nounType: "PERSON" } }),
-    db.noun.findMany({
-      where: { campaignId, nounType: "PLACE" },
-      orderBy: { name: "asc" },
-      take: 3,
-    }),
+    getNounsByType("PLACE"),
     db.noun.count({ where: { campaignId, nounType: "PLACE" } }),
-    db.noun.findMany({
-      where: { campaignId, nounType: "THING" },
-      orderBy: { name: "asc" },
-      take: 3,
-    }),
+    getNounsByType("THING"),
     db.noun.count({ where: { campaignId, nounType: "THING" } }),
-    db.noun.findMany({
-      where: { campaignId, nounType: "FACTION" },
-      orderBy: { name: "asc" },
-      take: 3,
-    }),
+    getNounsByType("FACTION"),
     db.noun.count({ where: { campaignId, nounType: "FACTION" } }),
-    db.session.findMany({
-      where: { campaignId },
-      orderBy: { createdAt: "desc" },
-    }),
-    db.member.findMany({ where: { campaignId } }),
+    getSessions({ campaignId, userId }),
+    getMembers({ campaignId, userId }),
   ]);
   if (!campaign) throw new Response("Not Found", { status: 404 });
 

@@ -1,6 +1,16 @@
 import { db } from "~/db.server";
-import { enforceWriteAccess } from "./campaigns.server";
+import { enforceReadAccess, enforceWriteAccess } from "./campaigns.server";
 
+export async function getMembers({
+  campaignId,
+  userId,
+}: {
+  campaignId: string;
+  userId: string;
+}) {
+  await enforceReadAccess({ campaignId, userId });
+  return await db.member.findMany({ where: { campaignId } });
+}
 export async function createMember({
   campaignId,
   userId,

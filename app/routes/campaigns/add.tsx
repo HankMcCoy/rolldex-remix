@@ -2,7 +2,7 @@ import { FormPage } from "~/components/layout";
 import { ActionFunction, redirect, MetaFunction } from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { getFormFields } from "~/util.server";
-import { db } from "~/db.server";
+import { createCampaign } from "~/queries/campaigns.server";
 
 export default function AddCampaign() {
   return (
@@ -22,8 +22,6 @@ export const action: ActionFunction = async ({ request }) => {
   } = await getFormFields({
     request,
   });
-  const newCampaign = await db.campaign.create({
-    data: { name, summary, createdById: userId },
-  });
+  const newCampaign = await createCampaign({ userId, data: { name, summary } });
   return redirect(`/campaigns/${newCampaign.id}`);
 };

@@ -110,3 +110,23 @@ export function getParams<T extends ReadonlyArray<string>>(
     };
   }, {} as Result);
 }
+
+export function getQueryParams<T extends ReadonlyArray<string>>(
+  request: Request,
+  keys: T
+): {
+  [K in T extends ReadonlyArray<infer U> ? U : never]: string;
+} {
+  type Result = {
+    [K in T extends ReadonlyArray<infer U> ? U : never]: string;
+  };
+  const { searchParams } = new URL(request.url);
+  return keys.reduce((acc, key): Result => {
+    if (!searchParams.get(key))
+      throw new Error(`Expected param '${key}' to exist`);
+    return {
+      ...acc,
+      [key]: searchParams.get(key),
+    };
+  }, {} as Result);
+}

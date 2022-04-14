@@ -1,6 +1,10 @@
 import { Campaign, Noun, Prisma } from "@prisma/client";
 import { db } from "~/db.server";
-import { enforceWriteAccess, getCampaign } from "./campaigns.server";
+import {
+  enforceWriteAccess,
+  getCampaign,
+  getCampaignAccessLevel,
+} from "./campaigns.server";
 
 function enforceMemberVisibility(noun: Noun): Noun {
   return {
@@ -32,6 +36,39 @@ export async function getNounAndCampaign({
       userId === campaign.createdById ? noun : enforceMemberVisibility(noun),
     campaign,
   };
+}
+
+export async function getNounsForCampaign({
+  campaignId,
+  userId,
+  where,
+  orderBy,
+  take,
+}: {
+  campaignId: string;
+  userId: string;
+  where?: Prisma.NounWhereInput;
+  orderBy?: Prisma.Enumerable<Prisma.NounOrderByWithRelationInput>;
+  take?: number;
+}): Promise<Noun[]> {
+  const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
+  if (accessLevel === "NONE")
+    throw new Error("User does not have access to campaign");
+
+  const nouns = await db.noun.findMany({
+    where: { ...where, campaignId },
+    orderBy,
+    take,
+  });
+
+  // Clear out any private fields
+  if (accessLevel === "READ_ONLY") {
+    nouns.forEach((n) => {
+      n.privateNotes === "";
+    });
+  }
+
+  return nouns;
 }
 
 export async function deleteNoun({

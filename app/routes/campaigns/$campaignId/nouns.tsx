@@ -8,6 +8,10 @@ import { Link, LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { LinkBox } from "~/components/link-box";
 import { Campaign, Noun } from "@prisma/client";
 import { db } from "~/db.server";
+import { getCampaign } from "~/queries/campaigns.server";
+import { getParams, getQueryParams } from "~/util";
+import { requireUserId } from "~/session.server";
+import { getNounsForCampaign } from "~/queries/nouns.server";
 
 export default function NounsList() {
   const { nounType, nounsOfType, campaign } = useLoaderData<LoaderData>();
@@ -59,21 +63,23 @@ type LoaderData = {
   campaign: Campaign;
 };
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const { campaignId } = params;
+  const userId = await requireUserId(request);
+  const { campaignId } = getParams(params, ["campaignId"] as const);
   const nounType = getNounTypeFromUrlFragment(
-    new URL(request.url).searchParams.get("nounType")
+    getQueryParams(request, ["nounType"] as const).nounType
   );
-  if (!nounType || !campaignId)
-    throw new Error(
-      `nounType and campaignId required, ${JSON.stringify({
-        nounType,
-        campaignId,
-      })}`
-    );
-  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
-  const nounsOfType = await db.noun.findMany({
-    where: { campaignId, nounType },
-    orderBy: { name: "asc" },
-  });
+
+  if (!nounType) throw new Error("Invalid nounType");
+
+  const [campaign, nounsOfType] = await Promise.all([
+    getCampaign({ campaignId, userId }),
+    getNounsForCampaign({
+      campaignId,
+      userId,
+      where: { nounType },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
   return { nounType, nounsOfType, campaign };
 };

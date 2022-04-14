@@ -1,6 +1,11 @@
 import { Campaign, Session, Prisma } from "@prisma/client";
 import { db } from "~/db.server";
-import { enforceWriteAccess, getCampaign } from "./campaigns.server";
+import {
+  enforceReadAccess,
+  enforceWriteAccess,
+  getCampaignAccessLevel,
+  getCampaign,
+} from "./campaigns.server";
 
 function enforceMemberVisibility(session: Session): Session {
   return {
@@ -8,6 +13,31 @@ function enforceMemberVisibility(session: Session): Session {
     privateNotes: "",
   };
 }
+
+export async function getSessions({
+  campaignId,
+  userId,
+}: {
+  campaignId: string;
+  userId: string;
+}): Promise<Session[]> {
+  const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
+  if (accessLevel === "NONE") throw new Error("Not authorized to access");
+
+  const sessions = await db.session.findMany({
+    where: { campaignId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (accessLevel === "READ_ONLY") {
+    sessions.forEach((s) => {
+      s.privateNotes === "";
+    });
+  }
+
+  return sessions;
+}
+
 export async function getSessionAndCampaign({
   sessionId,
   campaignId,
