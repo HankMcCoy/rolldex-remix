@@ -1,4 +1,4 @@
-import { Campaign, Noun } from "@prisma/client";
+import { Campaign, Noun, Prisma } from "@prisma/client";
 import { db } from "~/db.server";
 import { enforceWriteAccess, getCampaign } from "./campaigns.server";
 
@@ -39,7 +39,7 @@ export async function deleteNoun({
   campaignId: string;
   userId: string;
 }): Promise<void> {
-  enforceWriteAccess({ campaignId, userId });
+  await enforceWriteAccess({ campaignId, userId });
   await db.noun.delete({ where: { id: nounId } });
 }
 
@@ -50,7 +50,7 @@ export async function createNoun({
   userId: string;
   fields: { [k: string]: string };
 }): Promise<Noun> {
-  enforceWriteAccess({ campaignId: fields.campaignId, userId });
+  await enforceWriteAccess({ campaignId: fields.campaignId, userId });
   const noun = await db.noun.create({
     data: {
       campaignId: fields.campaignId,
@@ -62,4 +62,28 @@ export async function createNoun({
     },
   });
   return noun;
+}
+
+export async function updateNoun({
+  userId,
+  campaignId,
+  nounId,
+  data: { name, summary, notes, privateNotes },
+}: {
+  userId: string;
+  campaignId: string;
+  nounId: string;
+  data: {
+    name: string;
+    summary: string;
+    notes: string;
+    privateNotes: string;
+  };
+}): Promise<Noun> {
+  await enforceWriteAccess({ campaignId, userId });
+
+  return await db.noun.update({
+    where: { id: nounId },
+    data: { name, summary, notes, privateNotes },
+  });
 }

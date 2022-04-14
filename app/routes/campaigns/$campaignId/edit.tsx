@@ -8,8 +8,10 @@ import {
 } from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { getFormFields } from "~/util.server";
-import { db } from "~/db.server";
 import { Campaign } from "@prisma/client";
+import { getCampaign, updateCampaign } from "~/queries/campaigns.server";
+import { requireUserId } from "~/session.server";
+import { getParams } from "~/util";
 
 export default function EditCampaign() {
   const { campaign } = useLoaderData<LoaderData>();
@@ -40,8 +42,9 @@ interface LoaderData {
   campaign: Campaign;
 }
 export let loader: LoaderFunction = async ({ request, params }) => {
-  const { campaignId } = params;
-  const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
+  const { campaignId } = getParams(params, ["campaignId"] as const);
+  const userId = await requireUserId(request);
+  const campaign = await getCampaign({ campaignId, userId });
   return { campaign };
 };
 
@@ -49,9 +52,11 @@ export const action: ActionFunction = async ({ request }) => {
   const {
     fields: { id, name, summary },
   } = await getFormFields({ request });
+  const userId = await requireUserId(request);
 
-  await db.campaign.update({
-    where: { id },
+  await updateCampaign({
+    campaignId: id,
+    userId,
     data: { name, summary },
   });
   return redirect(`/campaigns/${id}`);

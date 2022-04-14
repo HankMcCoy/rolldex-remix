@@ -14,11 +14,9 @@ import {
   LabelRow,
 } from "~/components/forms";
 import { Campaign, Noun } from "@prisma/client";
-import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
-import { getNounAndCampaign } from "~/queries/nouns.server";
-import { requireUser, requireUserId } from "~/session.server";
-import { enforceWriteAccess } from "~/queries/campaigns.server";
+import { getNounAndCampaign, updateNoun } from "~/queries/nouns.server";
+import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
 
 export const meta: MetaFunction = ({
@@ -106,10 +104,10 @@ export const action: ActionFunction = async ({ request }) => {
     fields: { campaignId, nounId, name, summary, notes, privateNotes },
   } = await getFormFields({ request });
 
-  enforceWriteAccess({ campaignId, userId });
-
-  await db.noun.update({
-    where: { id: nounId },
+  await updateNoun({
+    userId,
+    campaignId,
+    nounId,
     data: { name, summary, notes, privateNotes },
   });
 

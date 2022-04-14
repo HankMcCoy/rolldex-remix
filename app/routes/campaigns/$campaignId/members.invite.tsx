@@ -2,7 +2,9 @@ import { FormPage } from "~/components/layout";
 import { ActionFunction, redirect, MetaFunction } from "remix";
 import { TextField } from "~/components/forms";
 import { getFormFields } from "~/util.server";
-import { db } from "~/db.server";
+import { getParams } from "~/util";
+import { createMember } from "~/queries/members.server";
+import { requireUserId } from "~/session.server";
 
 export default function AddCampaign() {
   return (
@@ -15,18 +17,14 @@ export default function AddCampaign() {
 export const meta: MetaFunction = () => ({ title: "Add campaign" });
 
 export const action: ActionFunction = async ({ params, request }) => {
-  const { campaignId } = params;
+  const { campaignId } = getParams(params, ["campaignId"]);
+  const userId = await requireUserId(request);
   const {
     fields: { email },
   } = await getFormFields({
     request,
   });
 
-  if (!campaignId || !email) {
-    throw new Error("BAD");
-  }
-  const newMember = await db.member.create({
-    data: { campaignId, email, memberType: "READ_ONLY" },
-  });
+  await createMember({ campaignId, userId, email });
   return redirect(`/campaigns/${campaignId}`);
 };

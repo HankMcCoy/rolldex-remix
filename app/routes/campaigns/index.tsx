@@ -2,7 +2,6 @@ import { Campaign } from ".prisma/client";
 import { useLoaderData, LoaderFunction } from "remix";
 import { Content, LinkButton } from "~/components/layout";
 import { LinkBox } from "~/components/link-box";
-import { db } from "~/db.server";
 import { getCampaignList } from "~/queries/campaigns.server";
 import { requireUserId } from "~/session.server";
 interface LoaderData {

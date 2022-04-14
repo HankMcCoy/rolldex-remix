@@ -10,6 +10,9 @@ import { TextField, TextareaField } from "~/components/forms";
 import { Campaign, Session } from "@prisma/client";
 import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
+import { getCampaign } from "~/queries/campaigns.server";
+import { requireUserId } from "~/session.server";
+import { getParams } from "~/util";
 
 export default function EditSession() {
   const { session, campaign } = useLoaderData<LoaderData>();
@@ -60,12 +63,14 @@ type LoaderData = {
   session: Session;
   campaign: Campaign;
 };
-export let loader: LoaderFunction = async ({ params }) => {
-  const { sessionId, campaignId } = params;
-  if (!sessionId || !campaignId)
-    throw new Error("sessionId and campaignId required");
+export let loader: LoaderFunction = async ({ request, params }) => {
+  const { sessionId, campaignId } = getParams(params, [
+    "sessionId",
+    "campaignId",
+  ] as const);
+  const userId = await requireUserId(request);
   const [campaign, session] = await Promise.all([
-    db.campaign.findUnique({ where: { id: campaignId } }),
+    getCampaign({ campaignId, userId }),
     db.session.findUnique({ where: { id: sessionId } }),
   ]);
   return { session, campaign };

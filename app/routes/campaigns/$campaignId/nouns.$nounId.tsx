@@ -17,11 +17,9 @@ import {
   PrivateTitledSection,
 } from "~/components/titled-section";
 
-import { db } from "~/db.server";
 import { getRelationsForNoun } from "~/queries/related.server";
 import { deleteNoun, getNounAndCampaign } from "~/queries/nouns.server";
-import { getUserId, requireUserId } from "~/session.server";
-import { Params } from "react-router-dom";
+import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
 
 export default function ViewNoun() {

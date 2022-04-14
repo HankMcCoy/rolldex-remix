@@ -9,7 +9,6 @@ import {
 } from "remix";
 import { TextField, TextareaField, LabelRow } from "~/components/forms";
 import { Campaign } from "@prisma/client";
-import { db } from "~/db.server";
 import { getFormFields } from "~/util.server";
 import { getCampaign } from "~/queries/campaigns.server";
 import { getParams } from "~/util";

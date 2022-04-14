@@ -1,4 +1,4 @@
-import { Campaign } from "@prisma/client";
+import { Campaign, Prisma } from "@prisma/client";
 import { db } from "~/db.server";
 
 export async function getCampaign({
@@ -46,6 +46,22 @@ export async function getCampaignList({
   return campaignsUserCreated.concat(
     campaignsUserIsMemberOf.map((x) => x.campaign)
   );
+}
+
+export async function updateCampaign({
+  campaignId,
+  userId,
+  data,
+}: {
+  campaignId: string;
+  userId: string;
+  data: Prisma.CampaignUncheckedUpdateInput;
+}) {
+  await enforceWriteAccess({ campaignId, userId });
+  await db.campaign.update({
+    where: { id: campaignId },
+    data,
+  });
 }
 
 export async function enforceWriteAccess({

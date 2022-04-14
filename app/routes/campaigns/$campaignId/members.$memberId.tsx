@@ -1,10 +1,18 @@
 import { ActionFunction, redirect } from "remix";
-import { db } from "~/db.server";
+import { deleteMember } from "~/queries/members.server";
+import { requireUserId } from "~/session.server";
+import { getParams } from "~/util";
 
 export let action: ActionFunction = async ({ request, params }) => {
   if (request.method === "DELETE") {
-    const { memberId, campaignId } = params;
-    await db.member.delete({ where: { id: memberId } });
+    const { memberId, campaignId } = getParams(params, [
+      "memberId",
+      "campaignId",
+    ] as const);
+    const userId = await requireUserId(request);
+
+    await deleteMember({ campaignId, memberId, userId });
+
     return redirect(`/campaigns/${campaignId}`);
   }
 
