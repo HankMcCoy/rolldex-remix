@@ -4,11 +4,10 @@ import {
   useEffect,
   useReducer,
   useRef,
-  useState,
 } from "react";
 import ReactModal from "react-modal";
+import { useFetcher } from "remix";
 import { useDebounce } from "use-debounce";
-import { useFetch } from "~/util/use-fetch";
 
 type Match = {
   name: string;
@@ -100,22 +99,28 @@ export const QuickFindModal: FunctionComponent<QuickFindModalProps> = ({
   const [debouncedQ] = useDebounce(state.q, 100);
 
   // Keep track of the latest matching set of nouns we have
-  const { data: latestQuickFindData } = useFetch<QuickFindData>(
-    debouncedQ ? `/campaigns/${campaignId}/quick-find?q=${debouncedQ}` : null
-  );
+  const quickFindDataFetcher = useFetcher<{ matches: Match[] }>();
   useEffect(() => {
-    if (latestQuickFindData !== undefined) {
+    if (debouncedQ) {
+      quickFindDataFetcher.load(
+        `/campaigns/${campaignId}/quick-find?q=${debouncedQ}`
+      );
+    }
+  }, [debouncedQ]);
+  useEffect(() => {
+    const { data } = quickFindDataFetcher;
+    if (data !== undefined) {
       dispatch({
         type: "MATCHES_LOADED",
         payload: isAdmin
-          ? latestQuickFindData.matches.concat({
+          ? data.matches.concat({
               name: `Add '${state.q}'`,
               href: `/campaigns/${campaignId}/nouns/add?name=${state.q}`,
             })
-          : latestQuickFindData.matches,
+          : data.matches,
       });
     }
-  }, [latestQuickFindData]);
+  }, [quickFindDataFetcher]);
 
   useEffect(() => {
     function handleKeydown(e: KeyboardEvent) {
