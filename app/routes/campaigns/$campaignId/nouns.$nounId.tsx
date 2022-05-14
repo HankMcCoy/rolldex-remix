@@ -10,7 +10,10 @@ import { Campaign, Noun, Session } from "@prisma/client";
 
 import { LinkButton, Content, SidePanel } from "~/components/layout";
 import { Markdown } from "~/components/markdown";
-import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
+import {
+  nounTypePluralDisplayText,
+  nounTypeUrlFragment,
+} from "~/util/noun-type-helpers";
 import { RelatedThings, RelatedThing } from "~/components/related-things";
 import {
   TitledSection,

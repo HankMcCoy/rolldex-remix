@@ -1,5 +1,5 @@
 import { FormPage } from "~/components/layout";
-import { getNounTypeFromUrlFragment } from "~/fake-data";
+import { getNounTypeFromUrlFragment } from "~/util/noun-type-helpers";
 import {
   LoaderFunction,
   ActionFunction,

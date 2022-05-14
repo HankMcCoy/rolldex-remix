@@ -3,7 +3,7 @@ import {
   nounTypePluralDisplayText,
   getNounTypeFromUrlFragment,
   nounTypeUrlFragment,
-} from "~/fake-data";
+} from "~/util/noun-type-helpers";
 import { Link, LoaderFunction, MetaFunction, useLoaderData } from "remix";
 import { LinkBox } from "~/components/link-box";
 import { Campaign, Noun } from "@prisma/client";

@@ -1,5 +1,8 @@
 import { FormPage } from "~/components/layout";
-import { nounTypePluralDisplayText, nounTypeUrlFragment } from "~/fake-data";
+import {
+  nounTypePluralDisplayText,
+  nounTypeUrlFragment,
+} from "~/util/noun-type-helpers";
 import {
   LoaderFunction,
   ActionFunction,
