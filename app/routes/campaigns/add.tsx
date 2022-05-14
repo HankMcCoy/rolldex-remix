@@ -7,7 +7,7 @@ import { createCampaign } from "~/queries/campaigns.server";
 export default function AddCampaign() {
   return (
     <FormPage heading="New Campaign" formId="new-campaign-form">
-      <TextField label="Name:" name="name" autoFocus />
+      <TextField label="Name:" name="name" />
       <TextareaField label="Summary:" name="summary" rows={3} />
     </FormPage>
   );

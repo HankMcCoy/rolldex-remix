@@ -30,12 +30,7 @@ export default function EditSession() {
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
       <input type="hidden" name="sessionId" value={session.id} />
-      <TextField
-        name="name"
-        label="Name:"
-        defaultValue={session.name}
-        autoFocus
-      />
+      <TextField name="name" label="Name:" defaultValue={session.name} />
       <TextareaField
         name="summary"
         label="Summary:"
