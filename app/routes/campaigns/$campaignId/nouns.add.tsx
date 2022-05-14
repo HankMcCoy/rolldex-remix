@@ -28,7 +28,7 @@ export default function AddNoun() {
       ]}
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
-      <TextField name="name" label="Name:" defaultValue={name} />
+      <TextField name="name" label="Name:" defaultValue={name} autoFocus />
       <LabelRow label="Noun Type">
         <select
           name="nounType"

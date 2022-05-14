@@ -46,7 +46,7 @@ export default function EditNoun() {
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
       <input type="hidden" name="nounId" value={noun.id} />
-      <TextField name="name" label="Name:" defaultValue={noun.name} />
+      <TextField name="name" label="Name:" defaultValue={noun.name} autoFocus />
       <LabelRow label="Noun Type">
         <select
           name="nounType"

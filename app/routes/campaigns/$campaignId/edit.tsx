@@ -19,7 +19,12 @@ export default function EditCampaign() {
   return (
     <FormPage heading={`Edit ${campaign.name}`} formId="edit-campaign-form">
       <input type="hidden" name="id" value={campaign.id} />
-      <TextField label="Name:" name="name" defaultValue={campaign.name} />
+      <TextField
+        label="Name:"
+        name="name"
+        defaultValue={campaign.name}
+        autoFocus
+      />
       <TextareaField
         label="Summary:"
         name="summary"

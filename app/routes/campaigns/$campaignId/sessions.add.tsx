@@ -32,7 +32,7 @@ export default function EditSession({ params }: Props) {
       ]}
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
-      <TextField name="name" label="Name:" />
+      <TextField name="name" label="Name:" autoFocus />
 
       <TextareaField name="summary" label="Summary:" rows={3} />
       <TextareaField name="notes" label="Notes:" rows={6} />

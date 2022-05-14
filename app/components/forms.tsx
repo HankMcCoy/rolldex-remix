@@ -24,12 +24,14 @@ interface TextFieldProps {
   type?: "text" | "email";
   title?: string;
   defaultValue?: string;
+  autoFocus?: boolean;
 }
 export const TextField: FunctionComponent<TextFieldProps> = ({
   label,
   title,
   name,
   defaultValue,
+  autoFocus,
   type = "text",
 }) => {
   return (
@@ -38,6 +40,7 @@ export const TextField: FunctionComponent<TextFieldProps> = ({
         type={type}
         name={name}
         defaultValue={defaultValue}
+        autoFocus={autoFocus}
         className="w-full"
       />
     </LabelRow>
@@ -50,6 +53,7 @@ interface TextareaFieldProps {
   title?: string;
   defaultValue?: string;
   rows?: number;
+  autoFocus?: boolean;
 }
 export const TextareaField: FunctionComponent<TextareaFieldProps> = ({
   label,
@@ -57,6 +61,7 @@ export const TextareaField: FunctionComponent<TextareaFieldProps> = ({
   title,
   rows,
   defaultValue,
+  autoFocus,
 }) => {
   return (
     <LabelRow label={label} title={title}>
@@ -65,6 +70,7 @@ export const TextareaField: FunctionComponent<TextareaFieldProps> = ({
         defaultValue={defaultValue}
         rows={rows}
         className="w-full"
+        autoFocus
       />
     </LabelRow>
   );
@@ -75,16 +81,18 @@ interface MarkdownFieldProps {
   name: string;
   title?: string;
   defaultValue?: string;
+  autoFocus?: boolean;
 }
 export const MarkdownField: FunctionComponent<MarkdownFieldProps> = ({
   label,
   name,
   title,
   defaultValue,
+  autoFocus,
 }) => {
   return (
     <LabelRow label={label} title={title}>
-      <MarkdownEditor name={name} defaultValue={defaultValue ?? ""} />
+      <MarkdownEditor name={name} defaultValue={defaultValue ?? ""} autoFocus />
     </LabelRow>
   );
 };

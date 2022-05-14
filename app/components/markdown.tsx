@@ -17,6 +17,7 @@ export const Markdown: FunctionComponent = ({ children }) => {
 type MarkdownEditorProps = {
   name: string;
   defaultValue: string;
+  autoFocus?: boolean;
   minHeight?: number;
 };
 export const MarkdownEditor: FunctionComponent<MarkdownEditorProps> = (
