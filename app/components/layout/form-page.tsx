@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect } from "react";
+import { FunctionComponent, useEffect, useRef } from "react";
 import { Form, useNavigate, useTransition } from "remix";
 import { CmdCtrlKey } from "~/util";
 import { Main, PageHeader } from "./basics";
@@ -17,7 +17,9 @@ export const FormPage: FunctionComponent<FormPageProps> = ({
 }) => {
   const transition = useTransition();
   const navigate = useNavigate();
+  const formRef = useRef<HTMLFormElement>(null);
 
+  // Require confirmation before navigating away.
   useEffect(() => {
     function confirmUnload(e: BeforeUnloadEvent) {
       e.preventDefault();
@@ -25,6 +27,24 @@ export const FormPage: FunctionComponent<FormPageProps> = ({
     }
     window.addEventListener("beforeunload", confirmUnload);
     return () => window.removeEventListener("beforeunload", confirmUnload);
+  }, []);
+
+  // Focus the first non-hidden form element, if no other form elements are
+  // already focused.
+  useEffect(() => {
+    if (formRef.current) {
+      const firstInput = formRef.current.querySelector<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >("input:not([type=hidden]),textarea,select");
+      if (
+        firstInput &&
+        !["INPUT", "SELECT", "TEXTAREA"].includes(
+          document.activeElement?.tagName ?? ""
+        )
+      ) {
+        firstInput.focus();
+      }
+    }
   }, []);
 
   return (
@@ -55,7 +75,12 @@ export const FormPage: FunctionComponent<FormPageProps> = ({
       <Main>
         <div className="flex space-x-6">
           <div className="flex-1 flex flex-col space-y-6">
-            <Form id={formId} method="post" className="max-w-md space-y-2">
+            <Form
+              id={formId}
+              method="post"
+              className="max-w-md space-y-2"
+              ref={formRef}
+            >
               <fieldset disabled={transition.state === "submitting"}>
                 {children}
               </fieldset>
