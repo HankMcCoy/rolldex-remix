@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, ReactNode, ReactElement } from "react";
 import { classNames } from "~/util";
 
 interface Props {
@@ -26,3 +26,9 @@ export const Heading: FunctionComponent<Props> = ({
     </div>
   );
 };
+
+export const ErrorText = ({
+  children,
+}: {
+  children: ReactNode;
+}): ReactElement => <span className="text-red-800">{children}</span>;

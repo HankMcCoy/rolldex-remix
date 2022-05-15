@@ -1,14 +1,19 @@
 import { LabelRow } from "~/components/forms";
-import { ActionFunction, MetaFunction, useActionData } from "remix";
+import {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction,
+  useActionData,
+} from "remix";
 import { db } from "~/db.server";
 import { createUserSession } from "~/session.server";
 import { getFormFields } from "~/util.server";
-import { comparePassword } from "~/queries/authentication.server";
+import { hashPassword } from "~/queries/authentication.server";
 import { ErrorText, Heading } from "~/components/text";
 import { Button } from "~/components/layout";
-import { badRequest } from "~/util/http-errors.server";
+import { badRequest, forbidden } from "~/util/http-errors.server";
 
-export default function Login() {
+export default function Register() {
   const actionData = useActionData<ActionData>();
   return (
     <div className="max-w-sm mx-auto mt-8">
@@ -41,11 +46,11 @@ export default function Login() {
             </div>
           ) : null}
           <div className="flex justify-between items-center">
-            <Button title="Log in" style="lightPrimary">
-              Log in
-            </Button>
-            <a href="/register" className="underline">
+            <Button title="Register" style="lightPrimary">
               Register
+            </Button>
+            <a href="/login" className="underline">
+              Log in
             </a>
           </div>
         </fieldset>
@@ -69,6 +74,8 @@ const validatePassword = (password: string) => {
 
 export const meta: MetaFunction = () => ({ title: "Login" });
 
+export const loader: LoaderFunction = async ({ request }) => {};
+
 interface ActionData {
   formError?: string;
   fieldErrors?: { email?: string; password?: string };
@@ -77,6 +84,8 @@ interface ActionData {
 export const action: ActionFunction = async ({ request }) => {
   const { fields } = await getFormFields({ request });
   const { email, password: plaintextPassword } = fields;
+
+  // Validate the email and password
   const fieldErrors = {
     email: validateEmail(email),
     password: validatePassword(plaintextPassword),
@@ -85,15 +94,26 @@ export const action: ActionFunction = async ({ request }) => {
     return badRequest({ fields, fieldErrors });
   }
 
-  const user = await db.user.findUnique({ where: { email } });
-  if (!user) {
-    return badRequest({ fields, formError: "Invalid login" });
+  // Ensure the email is allowed to register
+  const allowedEmails = (process.env.ALLOWED_EMAILS || "").split(",");
+  if (!allowedEmails.includes(email)) {
+    return forbidden({
+      fields,
+      fieldErrors: { email: "Email not allowed to register " },
+    });
   }
 
-  const passwordMatches = await comparePassword(plaintextPassword, user);
-  if (!passwordMatches) {
-    return badRequest({ fields, formError: "Invalid login" });
+  // Don't allow registrations for existing users
+  const existingUser = await db.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return badRequest({
+      fields,
+      formError: "User already exists, please log in",
+    });
   }
+
+  const passwordHash = await hashPassword(plaintextPassword);
+  const user = await db.user.create({ data: { email, passwordHash } });
 
   return createUserSession(user.id, "/campaigns");
 };

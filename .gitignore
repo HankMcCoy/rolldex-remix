@@ -12,3 +12,4 @@ app/tailwind.css
 app/styles
 
 prisma/dev.db
+prisma/dev.db-journal

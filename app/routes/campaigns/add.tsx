@@ -3,6 +3,7 @@ import { ActionFunction, redirect, MetaFunction } from "remix";
 import { TextField, TextareaField } from "~/components/forms";
 import { getFormFields } from "~/util.server";
 import { createCampaign } from "~/queries/campaigns.server";
+import { requireUserId } from "~/session.server";
 
 export default function AddCampaign() {
   return (
@@ -16,8 +17,8 @@ export default function AddCampaign() {
 export const meta: MetaFunction = () => ({ title: "Add campaign" });
 
 export const action: ActionFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
   const {
-    userId,
     fields: { name, summary },
   } = await getFormFields({
     request,

@@ -4,18 +4,19 @@ import { MarkdownEditor } from "./markdown";
 interface LabelRowProps {
   label: string;
   title?: string;
+  error?: string;
 }
 export const LabelRow: FunctionComponent<LabelRowProps> = ({
   label,
   title,
+  error,
   children,
 }) => (
-  <div>
-    <label title={title ?? label}>
-      <span className="block text-lg font-serif">{label}</span>
-      {children}
-    </label>
-  </div>
+  <label title={title ?? label} className="block mb-3 last:mb-0">
+    <span className="block text-lg font-serif mb-1">{label}</span>
+    {children}
+    {error ? <span className="block text-red-800">{error}</span> : null}
+  </label>
 );
 
 interface TextFieldProps {

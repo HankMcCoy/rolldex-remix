@@ -12,7 +12,7 @@ const basicStyles = "flex items-center rounded ";
 const styles: Record<ButtonStyle | ButtonSize, string> = {
   darkPrimary: "hover:bg-white hover:bg-opacity-20 border border-white",
   darkSecondary: "hover:bg-white hover:bg-opacity-20",
-  lightPrimary: "",
+  lightPrimary: "bg-violet-800 text-white hover:bg-opacity-90",
   lightSecondary: "border border-violet-800 text-violet-800 hover:bg-violet-50",
 
   small: "h-7 px-2",

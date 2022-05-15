@@ -1,15 +1,11 @@
 import { asString } from "./util";
-import { getUserId } from "./session.server";
+import { json } from "remix";
 
 type GetFormFieldsArgs = {
   request: Request;
 };
 export const getFormFields = async ({ request }: GetFormFieldsArgs) => {
-  const [formData, userId] = await Promise.all([
-    request.formData(),
-    getUserId(request),
-  ]);
-  if (userId === null) throw new Error("Uh oh, 401");
+  const formData = await request.formData();
 
   const fields = [...formData.keys()].reduce(
     (obj, field) => ({
@@ -21,6 +17,5 @@ export const getFormFields = async ({ request }: GetFormFieldsArgs) => {
 
   return {
     fields,
-    userId,
   };
 };
