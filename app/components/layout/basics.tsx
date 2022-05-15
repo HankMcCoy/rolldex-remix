@@ -7,7 +7,6 @@ import { User } from "@prisma/client";
 
 const navigation = [
   { name: "Campaigns", href: "/campaigns", icon: UserGroupIcon },
-  { name: "Systems", href: "/systems", icon: BookOpenIcon },
 ];
 
 const intersperse = <T extends unknown>(
@@ -22,7 +21,6 @@ export const Sidebar: FunctionComponent<SidebarProps> = ({ user }) => {
 
   return (
     <div className="hidden lg:flex lg:w-56 lg:flex-col lg:fixed lg:inset-y-0">
-      {/* Sidebar component, swap this element with another sidebar if you like */}
       <div className="flex flex-col flex-grow bg-gray-700 overflow-y-auto">
         <div className="h-24 flex items-center flex-shrink-0 px-4">
           <a href="/" className="leading-10 w-auto text-3xl text-white">
@@ -51,7 +49,15 @@ export const Sidebar: FunctionComponent<SidebarProps> = ({ user }) => {
             ))}
           </nav>
         </div>
-        <div className="p-2 text-gray-300 text-sm">{user?.email}</div>
+        <div className="p-2 text-gray-400 text-xs flex justify-between">
+          <div className="">{user?.email}</div>
+          <Link
+            to="/logout"
+            className="uppercase font-medium hover:text-gray-300"
+          >
+            Log out
+          </Link>
+        </div>
       </div>
     </div>
   );
