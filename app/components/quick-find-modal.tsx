@@ -124,6 +124,8 @@ export const QuickFindModal: FunctionComponent<QuickFindModalProps> = ({
 
   useEffect(() => {
     function handleKeydown(e: KeyboardEvent) {
+      if (!isShown) return;
+
       if (e.key === "ArrowDown") {
         dispatch({ type: "ARROW_DOWN" });
         e.preventDefault();
@@ -143,7 +145,7 @@ export const QuickFindModal: FunctionComponent<QuickFindModalProps> = ({
     }
     window.addEventListener("keydown", handleKeydown);
     return () => window.removeEventListener("keydown", handleKeydown);
-  });
+  }, [isShown]);
 
   return (
     <ReactModal
