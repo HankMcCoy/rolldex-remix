@@ -60,8 +60,11 @@ export async function getRelationsForNoun({
 }> {
   const [noun, allNouns, allSessions] = await Promise.all([
     db.noun.findUnique({ where: { id: nounId } }),
-    db.noun.findMany({ where: { campaignId } }),
-    db.session.findMany({ where: { campaignId } }),
+    db.noun.findMany({ where: { campaignId }, orderBy: { name: "asc" } }),
+    db.session.findMany({
+      where: { campaignId },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
   if (!noun) throw new Response("Not found", { status: 404 });
   const matchingNouns = allNouns.filter((nounToCheck) =>
@@ -89,7 +92,7 @@ export async function getRelationsForSession({
 
   const [session, allNouns] = await Promise.all([
     db.session.findUnique({ where: { id: sessionId } }),
-    db.noun.findMany({ where: { campaignId } }),
+    db.noun.findMany({ where: { campaignId }, orderBy: { name: "asc" } }),
   ]);
   if (!session) throw new Response("Not found", { status: 404 });
 
