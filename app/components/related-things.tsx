@@ -20,7 +20,7 @@ export const RelatedThings = ({ title, things, getUrl }: RelatedThingsProps) =>
           <Tooltip
             key={t.id}
             renderTarget={(ref) => (
-              <li ref={ref}>
+              <li ref={ref} className="my-1">
                 <Link to={getUrl(t)}>- {t.name}</Link>
               </li>
             )}
