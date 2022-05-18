@@ -1,5 +1,4 @@
-import { useEffect, useRef, MutableRefObject, useState } from "react";
-import isHotkey from "is-hotkey";
+import { useEffect, useRef, useState } from "react";
 import { Params } from "react-router-dom";
 
 export { useClickHotkey } from "./util/keyboard-shortcuts";

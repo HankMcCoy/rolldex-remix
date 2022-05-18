@@ -4,6 +4,7 @@ node_modules
 .cache
 .vercel
 .output
+.import
 
 public/build
 api/build
