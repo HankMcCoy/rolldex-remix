@@ -109,7 +109,7 @@ export async function updateNoun({
   userId,
   campaignId,
   nounId,
-  data: { name, summary, notes, privateNotes },
+  data: { name, summary, notes, privateNotes, nounType },
 }: {
   userId: string;
   campaignId: string;
@@ -119,12 +119,13 @@ export async function updateNoun({
     summary: string;
     notes: string;
     privateNotes: string;
+    nounType: string;
   };
 }): Promise<Noun> {
   await enforceWriteAccess({ campaignId, userId });
 
   return await db.noun.update({
     where: { id: nounId },
-    data: { name, summary, notes, privateNotes },
+    data: { name, summary, notes, privateNotes, nounType },
   });
 }

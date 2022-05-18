@@ -104,14 +104,22 @@ export let loader: LoaderFunction = async ({ params, request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const {
-    fields: { campaignId, nounId, name, summary, notes, privateNotes },
+    fields: {
+      campaignId,
+      nounId,
+      name,
+      summary,
+      notes,
+      privateNotes,
+      nounType,
+    },
   } = await getFormFields({ request });
 
   await updateNoun({
     userId,
     campaignId,
     nounId,
-    data: { name, summary, notes, privateNotes },
+    data: { name, summary, notes, privateNotes, nounType },
   });
 
   return redirect(`/campaigns/${campaignId}/nouns/${nounId}`);
