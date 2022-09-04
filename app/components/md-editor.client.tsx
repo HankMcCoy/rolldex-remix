@@ -1,38 +1,24 @@
-import SimpleMdeImpl from "simplemde";
-import * as React from "react";
+import EasyMDE from "easymde";
+import { useEffect, useRef } from "react";
 
-interface Target {
-  name: string;
-  value: string;
-}
 interface MdEditorProps {
   name: string;
-  value?: string;
   defaultValue?: string;
-  onChange?: ({ target }: { target: Target }) => void;
-  minHeight: number;
+  minHeight?: number;
 }
-export class MdEditor extends React.Component<MdEditorProps, Readonly<{}>> {
-  textareaRef: { current: null | HTMLTextAreaElement } = React.createRef();
-  simpleMde: SimpleMdeImpl | null = null;
-  static defaultProps = {
-    minHeight: 100,
-  };
-  render() {
-    return (
-      <div
-        className="md-editor-root focus:ring-1"
-        style={{ minHeight: this.props.minHeight }}
-      >
-        <textarea name={this.props.name} ref={this.textareaRef} />
-      </div>
-    );
-  }
-  componentDidMount() {
-    this.simpleMde = new SimpleMdeImpl({
+export const MdEditor = ({
+  name,
+  defaultValue,
+  minHeight = 100,
+}: MdEditorProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const easyMde = useRef<EasyMDE>();
+
+  useEffect(() => {
+    easyMde.current = new EasyMDE({
       spellChecker: false,
-      element: this.textareaRef.current ?? undefined,
-      initialValue: this.props.defaultValue,
+      element: textareaRef.current ?? undefined,
+      initialValue: defaultValue,
       toolbar: false,
       status: false,
       shortcuts: {
@@ -40,16 +26,25 @@ export class MdEditor extends React.Component<MdEditorProps, Readonly<{}>> {
       },
     });
 
-    this.simpleMde.codemirror.options.extraKeys["Tab"] = false;
-    this.simpleMde.codemirror.options.extraKeys["Shift-Tab"] = false;
-  }
-  shouldComponentUpdate() {
-    return false;
-  }
-  componentWillUnmount() {
-    if (this.simpleMde) {
-      this.simpleMde.toTextArea();
-      this.simpleMde = null;
-    }
-  }
-}
+    easyMde.current.codemirror.setOption("extraKeys", {
+      Tab: false,
+      "Shift-Tab": false,
+    });
+
+    return () => {
+      if (easyMde.current) {
+        easyMde.current.toTextArea();
+        easyMde.current = undefined;
+      }
+    };
+  }, [name, defaultValue]);
+
+  return (
+    <div
+      className="md-editor-root focus:ring-1"
+      style={{ minHeight: minHeight }}
+    >
+      <textarea name={name} ref={textareaRef} />
+    </div>
+  );
+};

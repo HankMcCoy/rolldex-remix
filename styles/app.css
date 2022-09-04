@@ -63,7 +63,7 @@ html {
   }
 }
 
-.CodeMirror.CodeMirror {
+.md-editor-root .CodeMirror.CodeMirror {
   border-color: #71717a;
   border-radius: 0;
 
