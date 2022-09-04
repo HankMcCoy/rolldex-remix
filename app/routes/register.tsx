@@ -74,8 +74,6 @@ const validatePassword = (password: string) => {
 
 export const meta: MetaFunction = () => ({ title: "Login" });
 
-export const loader: LoaderFunction = async ({ request }) => {};
-
 interface ActionData {
   formError?: string;
   fieldErrors?: { email?: string; password?: string };
