@@ -71,11 +71,10 @@ export default function EditNoun() {
         rows={3}
       />
       <MarkdownField name="notes" label="Notes:" defaultValue={noun.notes} />
-      <TextareaField
+      <MarkdownField
         name="privateNotes"
         label="Private Notes:"
         defaultValue={noun.privateNotes}
-        rows={6}
       />
     </FormPage>
   );

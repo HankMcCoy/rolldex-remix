@@ -7,7 +7,12 @@ import {
   redirect,
   MetaFunction,
 } from "remix";
-import { TextField, TextareaField, LabelRow } from "~/components/forms";
+import {
+  TextField,
+  TextareaField,
+  LabelRow,
+  MarkdownField,
+} from "~/components/forms";
 import { Campaign } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { getCampaign } from "~/queries/campaigns.server";
@@ -44,8 +49,8 @@ export default function AddNoun() {
         </select>
       </LabelRow>
       <TextareaField name="summary" label="Summary:" rows={3} />
-      <TextareaField name="notes" label="Notes:" rows={6} />
-      <TextareaField name="privateNotes" label="Private Notes:" rows={6} />
+      <MarkdownField name="notes" label="Notes:" />
+      <MarkdownField name="privateNotes" label="Private Notes:" />
     </FormPage>
   );
 }

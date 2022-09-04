@@ -6,7 +6,7 @@ import {
   redirect,
   MetaFunction,
 } from "remix";
-import { TextField, TextareaField } from "~/components/forms";
+import { TextField, TextareaField, MarkdownField } from "~/components/forms";
 import { Campaign, Session } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { requireUserId } from "~/session.server";
@@ -37,17 +37,11 @@ export default function EditSession() {
         defaultValue={session.summary}
         rows={3}
       />
-      <TextareaField
-        name="notes"
-        label="Notes:"
-        defaultValue={session.notes}
-        rows={6}
-      />
-      <TextareaField
+      <MarkdownField name="notes" label="Notes:" defaultValue={session.notes} />
+      <MarkdownField
         name="privateNotes"
         label="Private Notes:"
         defaultValue={session.privateNotes}
-        rows={6}
       />
     </FormPage>
   );
