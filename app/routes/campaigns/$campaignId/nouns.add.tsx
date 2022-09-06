@@ -6,22 +6,22 @@ import {
   useLoaderData,
   redirect,
   MetaFunction,
+  json,
+  useActionData,
 } from "remix";
-import {
-  TextField,
-  TextareaField,
-  LabelRow,
-  MarkdownField,
-} from "~/components/forms";
+import { z } from "zod";
+
 import { Campaign } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { getCampaign } from "~/queries/campaigns.server";
 import { getParams } from "~/util";
 import { requireUserId } from "~/session.server";
 import { createNoun } from "~/queries/nouns.server";
+import { getFields } from "~/components/nouns/fields";
 
 export default function AddNoun() {
   const { nounType, campaign, name } = useLoaderData<LoaderData>();
+  const { errors } = useActionData<ActionData>() ?? {};
 
   return (
     <FormPage
@@ -32,25 +32,14 @@ export default function AddNoun() {
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
       ]}
     >
-      <input type="hidden" name="campaignId" value={campaign.id} />
-      <TextField name="name" label="Name:" defaultValue={name} />
-      <LabelRow label="Noun Type">
-        <select
-          name="nounType"
-          className="w-full"
-          required
-          defaultValue={getNounTypeFromUrlFragment(nounType)}
-        >
-          <option></option>
-          <option value="PERSON">Person</option>
-          <option value="PLACE">Place</option>
-          <option value="THING">Thing</option>
-          <option value="FACTION">Faction</option>
-        </select>
-      </LabelRow>
-      <TextareaField name="summary" label="Summary:" rows={3} />
-      <MarkdownField name="notes" label="Notes:" />
-      <MarkdownField name="privateNotes" label="Private Notes:" />
+      {getFields({
+        data: {
+          campaignId: campaign.id,
+          name,
+          nounType: getNounTypeFromUrlFragment(nounType),
+        },
+        errors: errors ?? {},
+      })}
     </FormPage>
   );
 }
@@ -79,11 +68,34 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   return { nounType, campaign, name };
 };
 
+const validation = z.object({
+  campaignId: z.string(),
+  name: z.string().min(1, "Required"),
+  summary: z.string().min(1, "Required"),
+  nounType: z.string(),
+  notes: z.string(),
+  privateNotes: z.string(),
+});
+type Fields = z.infer<typeof validation>;
+type FieldErrors = Partial<{ [K in keyof Fields]: string[] }>;
+type ActionData =
+  | {
+      errors: FieldErrors;
+    }
+  | undefined;
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const { fields } = await getFormFields({
     request,
   });
-  const noun = await createNoun({ fields, userId });
+
+  const parseResult = validation.safeParse(fields);
+  if (!parseResult.success) {
+    return json<ActionData>({
+      errors: parseResult.error.flatten().fieldErrors,
+    });
+  }
+
+  const noun = await createNoun({ userId, data: parseResult.data });
   return redirect(`/campaigns/${fields.campaignId}/nouns/${noun.id}`);
 };

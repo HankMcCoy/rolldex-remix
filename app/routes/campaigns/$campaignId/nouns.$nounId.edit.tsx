@@ -9,18 +9,17 @@ import {
   useLoaderData,
   redirect,
   MetaFunction,
+  useActionData,
+  json,
 } from "remix";
-import {
-  TextField,
-  TextareaField,
-  MarkdownField,
-  LabelRow,
-} from "~/components/forms";
+import { z } from "zod";
+
 import { Campaign, Noun } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { getNounAndCampaign, updateNoun } from "~/queries/nouns.server";
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
+import { getFields } from "~/components/nouns/fields";
 
 export const meta: MetaFunction = ({
   data,
@@ -32,6 +31,7 @@ export const meta: MetaFunction = ({
 
 export default function EditNoun() {
   const { noun, campaign } = useLoaderData<LoaderData>();
+  const { errors } = useActionData<ActionData>() ?? {};
   const nounTypeUrl = nounTypeUrlFragment[noun.nounType];
 
   return (
@@ -47,35 +47,10 @@ export default function EditNoun() {
         },
       ]}
     >
-      <input type="hidden" name="campaignId" value={campaign.id} />
-      <input type="hidden" name="nounId" value={noun.id} />
-      <TextField name="name" label="Name:" defaultValue={noun.name} />
-      <LabelRow label="Noun Type">
-        <select
-          name="nounType"
-          className="w-full"
-          required
-          defaultValue={noun.nounType}
-        >
-          <option></option>
-          <option value="PERSON">Person</option>
-          <option value="PLACE">Place</option>
-          <option value="THING">Thing</option>
-          <option value="FACTION">Faction</option>
-        </select>
-      </LabelRow>
-      <TextareaField
-        name="summary"
-        label="Summary:"
-        defaultValue={noun.summary}
-        rows={3}
-      />
-      <MarkdownField name="notes" label="Notes:" defaultValue={noun.notes} />
-      <MarkdownField
-        name="privateNotes"
-        label="Private Notes:"
-        defaultValue={noun.privateNotes}
-      />
+      {getFields({
+        data: { ...noun, campaignId: campaign.id },
+        errors: errors ?? {},
+      })}
     </FormPage>
   );
 }
@@ -100,20 +75,35 @@ export let loader: LoaderFunction = async ({ params, request }) => {
   return { noun, campaign };
 };
 
+const validation = z.object({
+  campaignId: z.string(),
+  nounId: z.string(),
+  name: z.string().min(1, "Required"),
+  summary: z.string().min(1, "Required"),
+  nounType: z.string(),
+  notes: z.string(),
+  privateNotes: z.string(),
+});
+type Fields = z.infer<typeof validation>;
+type FieldErrors = Partial<{ [K in keyof Fields]: string[] }>;
+type ActionData =
+  | {
+      errors: FieldErrors;
+    }
+  | undefined;
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const {
-    fields: {
-      campaignId,
-      nounId,
-      name,
-      summary,
-      notes,
-      privateNotes,
-      nounType,
-    },
-  } = await getFormFields({ request });
+  const { fields } = await getFormFields({ request });
 
+  const parseResult = validation.safeParse(fields);
+  if (!parseResult.success) {
+    return json<ActionData>({
+      errors: parseResult.error.flatten().fieldErrors,
+    });
+  }
+
+  const { campaignId, nounId, name, summary, notes, privateNotes, nounType } =
+    parseResult.data;
   await updateNoun({
     userId,
     campaignId,
