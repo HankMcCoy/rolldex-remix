@@ -6,13 +6,13 @@ import {
   useLoaderData,
   redirect,
   MetaFunction,
-  json,
   useActionData,
 } from "remix";
 import { z } from "zod";
 
 import { Campaign } from "@prisma/client";
 import { getFormFields } from "~/util.server";
+import { badRequest } from "~/util/http-errors.server";
 import { getCampaign } from "~/queries/campaigns.server";
 import { getParams } from "~/util";
 import { requireUserId } from "~/session.server";
@@ -21,7 +21,7 @@ import { getFields } from "~/components/nouns/fields";
 
 export default function AddNoun() {
   const { nounType, campaign, name } = useLoaderData<LoaderData>();
-  const { errors } = useActionData<ActionData>() ?? {};
+  const { fieldErrors } = useActionData<ActionData>() ?? {};
 
   return (
     <FormPage
@@ -38,7 +38,7 @@ export default function AddNoun() {
           name,
           nounType: getNounTypeFromUrlFragment(nounType),
         },
-        errors: errors ?? {},
+        errors: fieldErrors ?? {},
       })}
     </FormPage>
   );
@@ -77,23 +77,16 @@ const validation = z.object({
   privateNotes: z.string(),
 });
 type Fields = z.infer<typeof validation>;
-type FieldErrors = Partial<{ [K in keyof Fields]: string[] }>;
-type ActionData =
-  | {
-      errors: FieldErrors;
-    }
-  | undefined;
+type ActionData = z.typeToFlattenedError<Fields> | undefined;
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const { fields } = await getFormFields({
+  const fields = await getFormFields({
     request,
   });
 
   const parseResult = validation.safeParse(fields);
   if (!parseResult.success) {
-    return json<ActionData>({
-      errors: parseResult.error.flatten().fieldErrors,
-    });
+    return badRequest<ActionData>(parseResult.error.flatten());
   }
 
   const noun = await createNoun({ userId, data: parseResult.data });

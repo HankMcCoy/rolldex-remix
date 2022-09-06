@@ -1,4 +1,4 @@
-import { FunctionComponent, MouseEventHandler } from "react";
+import React, { FunctionComponent, MouseEventHandler } from "react";
 import { Link } from "remix";
 import { classNames, useClickHotkey } from "~/util";
 
@@ -28,6 +28,7 @@ export interface LinkButtonProps {
   style: ButtonStyle;
   size?: ButtonSize;
   shortcut?: string;
+  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 }
 export const LinkButton: FunctionComponent<LinkButtonProps> = ({
   to,
@@ -35,6 +36,7 @@ export const LinkButton: FunctionComponent<LinkButtonProps> = ({
   style,
   shortcut,
   children,
+  onClick,
   size = "medium",
 }) => {
   const shortcutRef = useClickHotkey<HTMLAnchorElement>(shortcut);
@@ -44,6 +46,7 @@ export const LinkButton: FunctionComponent<LinkButtonProps> = ({
       title={title}
       className={getStyles(style, size)}
       ref={shortcutRef}
+      onClick={onClick}
     >
       {children}
     </Link>

@@ -1,5 +1,4 @@
 import { asString } from "./util";
-import { json } from "remix";
 
 type GetFormFieldsArgs = {
   request: Request;
@@ -15,7 +14,5 @@ export const getFormFields = async ({ request }: GetFormFieldsArgs) => {
     {} as { [k: string]: string }
   );
 
-  return {
-    fields,
-  };
+  return fields
 };

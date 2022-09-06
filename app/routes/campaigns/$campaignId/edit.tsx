@@ -49,9 +49,7 @@ export let loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  const {
-    fields: { id, name, summary },
-  } = await getFormFields({ request });
+  const { id, name, summary } = await getFormFields({ request });
   const userId = await requireUserId(request);
 
   await updateCampaign({

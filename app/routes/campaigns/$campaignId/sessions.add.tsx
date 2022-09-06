@@ -62,7 +62,7 @@ export let loader: LoaderFunction = async ({ request, params }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const { fields } = await getFormFields({
+  const fields = await getFormFields({
     request,
   });
 

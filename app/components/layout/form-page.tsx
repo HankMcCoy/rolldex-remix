@@ -53,14 +53,19 @@ export const FormPage: FunctionComponent<FormPageProps> = ({
         {...{ heading, breadcrumbs }}
         controls={
           <>
-            <Button
+            {/* The use of a LinkButton here is silly overkill, ensuring the cancel button at least kind of works even if JS is disabled */}
+            <LinkButton
               title={`Cancel (${CmdCtrlKey}-E)`}
               shortcut="mod+e"
-              onClick={() => navigate(-1)}
+              to={breadcrumbs ? breadcrumbs[breadcrumbs.length - 1].href : "/"}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(-1);
+              }}
               style="darkSecondary"
             >
               Cancel
-            </Button>
+            </LinkButton>
             <Button
               form={formId}
               title={`Save (${CmdCtrlKey}-S)`}

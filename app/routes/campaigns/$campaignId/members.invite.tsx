@@ -19,9 +19,7 @@ export const meta: MetaFunction = () => ({ title: "Add campaign" });
 export const action: ActionFunction = async ({ params, request }) => {
   const { campaignId } = getParams(params, ["campaignId"]);
   const userId = await requireUserId(request);
-  const {
-    fields: { email },
-  } = await getFormFields({
+  const { email } = await getFormFields({
     request,
   });
 

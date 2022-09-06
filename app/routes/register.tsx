@@ -1,20 +1,18 @@
 import { LabelRow } from "~/components/forms";
-import {
-  ActionFunction,
-  LoaderFunction,
-  MetaFunction,
-  useActionData,
-} from "remix";
+import { ActionFunction, MetaFunction, useActionData } from "remix";
+import { z } from "zod";
 import { db } from "~/db.server";
 import { createUserSession } from "~/session.server";
 import { getFormFields } from "~/util.server";
 import { hashPassword } from "~/queries/authentication.server";
 import { ErrorText, Heading } from "~/components/text";
 import { Button } from "~/components/layout";
-import { badRequest, forbidden } from "~/util/http-errors.server";
+import { badRequest } from "~/util/http-errors.server";
+
+export const meta: MetaFunction = () => ({ title: "Login" });
 
 export default function Register() {
-  const actionData = useActionData<ActionData>();
+  const { fields, errors } = useActionData<ActionData>() ?? {};
   return (
     <div className="max-w-sm mx-auto mt-8">
       <Heading l={1} className="mb-4">
@@ -22,27 +20,30 @@ export default function Register() {
       </Heading>
       <form method="post">
         <fieldset>
-          <LabelRow label="Email" error={actionData?.fieldErrors?.email}>
+          <LabelRow label="Email" errors={errors?.fieldErrors?.email}>
             <input
               name="email"
               type="email"
               className="w-full"
               required
-              defaultValue={actionData?.fields?.email}
+              defaultValue={fields?.email}
             />
           </LabelRow>
-          <LabelRow label="Password" error={actionData?.fieldErrors?.password}>
+          <LabelRow
+            label="Password"
+            errors={errors?.fieldErrors?.plaintextPassword}
+          >
             <input
-              name="password"
+              name="plaintextPassword"
               type="password"
               className="w-full"
               required
-              defaultValue={actionData?.fields?.password}
+              defaultValue={fields?.plaintextPassword}
             />
           </LabelRow>
-          {actionData?.formError ? (
+          {errors?.formErrors ? (
             <div className="my-2">
-              <ErrorText>{actionData.formError}</ErrorText>
+              <ErrorText>{errors.formErrors.join(", ")}</ErrorText>
             </div>
           ) : null}
           <div className="flex justify-between items-center">
@@ -59,56 +60,48 @@ export default function Register() {
   );
 }
 
-const validateEmail = (email: string) => {
-  if (email.indexOf("@") === -1 || email.indexOf(".") === -1)
-    return "Invalid email";
-  return undefined;
+const fieldTypeSchema = {
+  email: z.string(),
+  plaintextPassword: z.string(),
 };
-
-const validatePassword = (password: string) => {
-  if (password.length < 5)
-    return "Your password must be at least 5 characters long";
-
-  return undefined;
-};
-
-export const meta: MetaFunction = () => ({ title: "Login" });
-
+const fieldTypeValidation = z.object(fieldTypeSchema);
+const validation = z.object({
+  email: fieldTypeSchema.email
+    .email()
+    .refine(
+      (email) => {
+        const allowedEmails = (process.env.ALLOWED_EMAILS || "").split(",");
+        return allowedEmails.includes(email);
+      },
+      {
+        message: "Email not allowed to register",
+      }
+    )
+    .refine(
+      async (email) => {
+        const existingUser = await db.user.findUnique({ where: { email } });
+        return !existingUser;
+      },
+      { message: "User already exists, please log in" }
+    ),
+  plaintextPassword: fieldTypeSchema.plaintextPassword.min(8),
+});
+type Fields = z.infer<typeof fieldTypeValidation>;
 interface ActionData {
-  formError?: string;
-  fieldErrors?: { email?: string; password?: string };
-  fields?: { email: string; password: string };
+  errors: z.typeToFlattenedError<Fields>;
+  fields: Fields;
 }
+
 export const action: ActionFunction = async ({ request }) => {
-  const { fields } = await getFormFields({ request });
-  const { email, password: plaintextPassword } = fields;
+  const fields = fieldTypeValidation.parse(await getFormFields({ request }));
 
   // Validate the email and password
-  const fieldErrors = {
-    email: validateEmail(email),
-    password: validatePassword(plaintextPassword),
-  };
-  if (Object.values(fieldErrors).some((x) => x !== undefined)) {
-    return badRequest({ fields, fieldErrors });
+  const parseResult = await validation.safeParseAsync(fields);
+  if (!parseResult.success) {
+    return badRequest({ fields, errors: parseResult.error.flatten() });
   }
 
-  // Ensure the email is allowed to register
-  const allowedEmails = (process.env.ALLOWED_EMAILS || "").split(",");
-  if (!allowedEmails.includes(email)) {
-    return forbidden({
-      fields,
-      fieldErrors: { email: "Email not allowed to register " },
-    });
-  }
-
-  // Don't allow registrations for existing users
-  const existingUser = await db.user.findUnique({ where: { email } });
-  if (existingUser) {
-    return badRequest({
-      fields,
-      formError: "User already exists, please log in",
-    });
-  }
+  const { email, plaintextPassword } = parseResult.data;
 
   const passwordHash = await hashPassword(plaintextPassword);
   const user = await db.user.create({ data: { email, passwordHash } });

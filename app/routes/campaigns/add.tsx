@@ -18,9 +18,7 @@ export const meta: MetaFunction = () => ({ title: "Add campaign" });
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const {
-    fields: { name, summary },
-  } = await getFormFields({
+  const { name, summary } = await getFormFields({
     request,
   });
   const newCampaign = await createCampaign({ userId, data: { name, summary } });

@@ -1,5 +1,3 @@
-import { Noun } from "@prisma/client";
-import { NounType } from "~/util/noun-type-helpers";
 import { TextField, LabelRow, TextareaField, MarkdownField } from "../forms";
 
 export const getFields = ({
