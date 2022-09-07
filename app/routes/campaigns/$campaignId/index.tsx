@@ -57,7 +57,16 @@ export default function ViewCampaign() {
     (s: Session) => (
       <LinkBox
         key={s.id}
-        title={s.name}
+        title={
+          s.isSecret ? (
+            <div className="flex items-center">
+              <Lock size={24} className="mr-1 -ml-1" />
+              {s.name}
+            </div>
+          ) : (
+            s.name
+          )
+        }
         desc={s.summary}
         href={`/campaigns/${id}/sessions/${s.id}`}
         deleteable={isAdmin}

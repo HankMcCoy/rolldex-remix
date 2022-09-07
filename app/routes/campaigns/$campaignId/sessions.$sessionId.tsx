@@ -22,6 +22,7 @@ import {
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
 import { getCampaignAccessLevel } from "~/queries/campaigns.server";
+import Lock from "~/components/icons/lock";
 
 export default function ViewSession() {
   const { accessLevel, session, campaign, relations } =
@@ -34,7 +35,12 @@ export default function ViewSession() {
 
   return (
     <Content
-      heading={session.name}
+      heading={
+        <div className="flex items-center">
+          {session.isSecret && <Lock className="mr-1" />}
+          {session.name}
+        </div>
+      }
       breadcrumbs={[
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },

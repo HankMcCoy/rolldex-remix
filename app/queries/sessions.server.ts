@@ -31,7 +31,11 @@ export async function getSessionsForCampaign({
   if (accessLevel === "NONE") throw new Error("Not authorized to access");
 
   const sessions = await db.session.findMany({
-    where: { ...where, campaignId },
+    where: {
+      ...where,
+      campaignId,
+      isSecret: accessLevel === "READ_ONLY" ? false : where?.isSecret,
+    },
     orderBy: { createdAt: "desc", ...orderBy },
     take,
   });
@@ -54,13 +58,16 @@ export async function getSessionAndCampaign({
   campaignId: string;
   userId: string;
 }): Promise<{ session: Session | null; campaign: Campaign | null }> {
-  const [session, campaign] = await Promise.all([
+  const [session, campaign, accessLevel] = await Promise.all([
     db.session.findUnique({ where: { id: sessionId } }),
     getCampaign({ campaignId, userId }),
+    getCampaignAccessLevel({ campaignId, userId }),
   ]);
 
   // TODO: Make errors better
   if (!session || !campaign) return { session: null, campaign: null };
+  if (session.isSecret && accessLevel === "READ_ONLY")
+    return { session: null, campaign: null };
   if (session.campaignId !== campaign.id)
     throw new Error("Session's campaign does not match provided campaign");
 

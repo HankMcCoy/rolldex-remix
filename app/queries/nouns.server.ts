@@ -21,13 +21,16 @@ export async function getNounAndCampaign({
   campaignId: string;
   userId: string;
 }): Promise<{ noun: Noun | null; campaign: Campaign | null }> {
-  const [noun, campaign] = await Promise.all([
+  const [noun, campaign, accessLevel] = await Promise.all([
     db.noun.findUnique({ where: { id: nounId } }),
     getCampaign({ campaignId, userId }),
+    getCampaignAccessLevel({ campaignId, userId }),
   ]);
 
   // TODO: Make errors better
   if (!noun || !campaign) return { noun: null, campaign: null };
+  if (noun.isSecret && accessLevel === "READ_ONLY")
+    return { noun: null, campaign: null };
   if (noun.campaignId !== campaign.id)
     throw new Error("Noun's campaign does not match provided campaign");
 
@@ -56,16 +59,19 @@ export async function getNounsForCampaign({
     throw new Error("User does not have access to campaign");
 
   const nouns = await db.noun.findMany({
-    where: { ...where, campaignId },
+    where: {
+      ...where,
+      campaignId,
+      // Only admins can see secret entities
+      isSecret: accessLevel === "READ_ONLY" ? false : where?.isSecret,
+    },
     orderBy,
     take,
   });
 
   // Clear out any private fields
   if (accessLevel === "READ_ONLY") {
-    nouns.forEach((n) => {
-      n.privateNotes === "";
-    });
+    nouns.forEach(enforceMemberVisibility);
   }
 
   return nouns;
