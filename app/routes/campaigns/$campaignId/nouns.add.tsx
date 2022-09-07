@@ -17,7 +17,8 @@ import { getCampaign } from "~/queries/campaigns.server";
 import { getParams } from "~/util";
 import { requireUserId } from "~/session.server";
 import { createNoun } from "~/queries/nouns.server";
-import { getFields } from "~/components/nouns/fields";
+import { NounFields } from "~/components/nouns/noun-fields";
+import { basicEntityValidation } from "~/shared/validations/basic-entity";
 
 export default function AddNoun() {
   const { nounType, campaign, name } = useLoaderData<LoaderData>();
@@ -32,14 +33,14 @@ export default function AddNoun() {
         { text: campaign.name, href: `/campaigns/${campaign.id}` },
       ]}
     >
-      {getFields({
-        data: {
+      <NounFields
+        data={{
           campaignId: campaign.id,
           name,
           nounType: getNounTypeFromUrlFragment(nounType),
-        },
-        errors: fieldErrors ?? {},
-      })}
+        }}
+        errors={fieldErrors ?? {}}
+      />
     </FormPage>
   );
 }
@@ -68,14 +69,9 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   return { nounType, campaign, name };
 };
 
-const validation = z.object({
-  campaignId: z.string(),
-  name: z.string().min(1, "Required"),
-  summary: z.string().min(1, "Required"),
-  nounType: z.string(),
-  notes: z.string(),
-  privateNotes: z.string(),
-});
+const validation = basicEntityValidation.merge(
+  z.object({ nounType: z.string() })
+);
 type Fields = z.infer<typeof validation>;
 type ActionData = z.typeToFlattenedError<Fields> | undefined;
 export const action: ActionFunction = async ({ request }) => {

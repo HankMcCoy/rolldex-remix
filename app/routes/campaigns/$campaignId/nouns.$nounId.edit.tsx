@@ -19,7 +19,8 @@ import { badRequest } from "~/util/http-errors.server";
 import { getNounAndCampaign, updateNoun } from "~/queries/nouns.server";
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
-import { getFields } from "~/components/nouns/fields";
+import { NounFields } from "~/components/nouns/noun-fields";
+import { basicEntityValidation } from "~/shared/validations/basic-entity";
 
 export const meta: MetaFunction = ({
   data,
@@ -31,7 +32,7 @@ export const meta: MetaFunction = ({
 
 export default function EditNoun() {
   const { noun, campaign } = useLoaderData<LoaderData>();
-  const actionData = useActionData<ActionData>();
+  const errors = useActionData<ActionData>();
   const nounTypeUrl = nounTypeUrlFragment[noun.nounType];
 
   return (
@@ -47,10 +48,10 @@ export default function EditNoun() {
         },
       ]}
     >
-      {getFields({
-        data: { ...noun, ...actionData?.fields, campaignId: campaign.id },
-        errors: actionData?.errors?.fieldErrors ?? {},
-      })}
+      <NounFields
+        data={{ ...noun, campaignId: campaign.id }}
+        errors={errors?.fieldErrors ?? {}}
+      />
     </FormPage>
   );
 }
@@ -75,36 +76,21 @@ export let loader: LoaderFunction = async ({ params, request }) => {
   return { noun, campaign };
 };
 
-const fieldTypeSchema = {
-  campaignId: z.string(),
-  nounId: z.string(),
-  name: z.string(),
-  summary: z.string(),
-  nounType: z.string(),
-  notes: z.string(),
-  privateNotes: z.string(),
-};
-const fieldTypeValidation = z.object(fieldTypeSchema);
-const validation = z.object({
-  ...fieldTypeSchema,
-  name: fieldTypeSchema.name.min(1, "Required"),
-  summary: fieldTypeSchema.summary.min(1, "Required"),
-});
-type Fields = z.infer<typeof fieldTypeValidation>;
-type ActionData = {
-  errors: z.typeToFlattenedError<Fields>;
-  fields: Fields;
-};
+const validation = basicEntityValidation.merge(
+  z.object({
+    nounId: z.string(),
+    nounType: z.string(),
+  })
+);
+type Fields = z.infer<typeof validation>;
+type ActionData = z.typeToFlattenedError<Fields> | undefined;
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const fields = fieldTypeValidation.parse(await getFormFields({ request }));
+  const fields = await getFormFields({ request });
 
   const parseResult = validation.safeParse(fields);
   if (!parseResult.success) {
-    return badRequest<ActionData>({
-      fields,
-      errors: parseResult.error.flatten(),
-    });
+    return badRequest<ActionData>(parseResult.error.flatten());
   }
 
   const { campaignId, nounId, name, summary, notes, privateNotes, nounType } =

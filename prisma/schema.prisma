@@ -25,7 +25,7 @@ model Campaign {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdById String
-  name        String
+  name        String   @unique
   summary     String
 
   createdBy User      @relation(fields: [createdById], references: [id])
@@ -39,12 +39,13 @@ model Session {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   campaignId   String
-  name         String
+  name         String   
   summary      String
   notes        String
   privateNotes String
 
   campaign Campaign @relation(fields: [campaignId], references: [id])
+  @@unique([campaignId, name])
 }
 
 model Noun {
@@ -52,13 +53,14 @@ model Noun {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   campaignId   String
-  name         String
+  name         String   
   summary      String
   notes        String
   privateNotes String
   nounType     String
 
   campaign Campaign @relation(fields: [campaignId], references: [id])
+  @@unique([campaignId, name])
 }
 
 model Member {

@@ -5,8 +5,9 @@ import {
   useLoaderData,
   redirect,
   MetaFunction,
+  useActionData,
 } from "remix";
-import { TextField, TextareaField, MarkdownField } from "~/components/forms";
+import { z } from "zod";
 import { Campaign, Session } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { requireUserId } from "~/session.server";
@@ -15,9 +16,14 @@ import {
   getSessionAndCampaign,
   updateSession,
 } from "~/queries/sessions.server";
+import { badRequest } from "~/util/http-errors.server";
+import { SessionFields } from "~/components/sessions/session-fields";
+import { DuplicateNameError } from "~/queries/errors.server";
+import { basicEntityValidation } from "~/shared/validations/basic-entity";
 
 export default function EditSession() {
   const { session, campaign } = useLoaderData<LoaderData>();
+  const errors = useActionData<ActionData>();
 
   return (
     <FormPage
@@ -30,19 +36,7 @@ export default function EditSession() {
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
       <input type="hidden" name="sessionId" value={session.id} />
-      <TextField name="name" label="Name:" defaultValue={session.name} />
-      <TextareaField
-        name="summary"
-        label="Summary:"
-        defaultValue={session.summary}
-        rows={3}
-      />
-      <MarkdownField name="notes" label="Notes:" defaultValue={session.notes} />
-      <MarkdownField
-        name="privateNotes"
-        label="Private Notes:"
-        defaultValue={session.privateNotes}
-      />
+      <SessionFields data={session} errors={errors?.fieldErrors} />
     </FormPage>
   );
 }
@@ -73,17 +67,42 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   return { session, campaign };
 };
 
+const validation = basicEntityValidation.merge(
+  z.object({
+    sessionId: z.string(),
+  })
+);
+type Fields = z.infer<typeof validation>;
+type ActionData = z.typeToFlattenedError<Fields> | undefined;
+
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const { campaignId, sessionId, name, summary, notes, privateNotes } =
-    await getFormFields({ request });
+  const fields = await getFormFields({ request });
 
-  await updateSession({
-    userId,
-    campaignId,
-    sessionId,
-    data: { name, summary, notes, privateNotes },
-  });
+  const parseResult = validation.safeParse(fields);
+  if (!parseResult.success) {
+    return badRequest<ActionData>(parseResult.error.flatten());
+  }
+  const { campaignId, sessionId, name, summary, notes, privateNotes } =
+    parseResult.data;
+
+  try {
+    await updateSession({
+      userId,
+      campaignId,
+      sessionId,
+      data: { name, summary, notes, privateNotes },
+    });
+  } catch (e) {
+    if (e instanceof DuplicateNameError) {
+      return badRequest<ActionData>({
+        fieldErrors: { name: ["Must be unique"] },
+        formErrors: [],
+      });
+    } else {
+      throw e;
+    }
+  }
 
   return redirect(`/campaigns/${campaignId}/sessions/${sessionId}`);
 };

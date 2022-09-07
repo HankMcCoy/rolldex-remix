@@ -1,11 +1,11 @@
 import { Campaign, Session, Prisma } from "@prisma/client";
 import { db } from "~/db.server";
 import {
-  enforceReadAccess,
   enforceWriteAccess,
   getCampaignAccessLevel,
   getCampaign,
 } from "./campaigns.server";
+import { handleDuplicateName } from "./errors.server";
 
 function enforceMemberVisibility(session: Session): Session {
   return {
@@ -88,22 +88,23 @@ export async function deleteSession({
 
 export async function createSession({
   userId,
-  fields,
+  data,
 }: {
   userId: string;
-  fields: { [k: string]: string };
+  data: {
+    campaignId: string;
+    name: string;
+    summary: string;
+    notes: string;
+    privateNotes: string;
+  };
 }): Promise<Session> {
-  await enforceWriteAccess({ campaignId: fields.campaignId, userId });
-  const session = await db.session.create({
-    data: {
-      campaignId: fields.campaignId,
-      name: fields.name,
-      summary: fields.summary,
-      notes: fields.notes,
-      privateNotes: fields.privateNotes,
-    },
-  });
-  return session;
+  await enforceWriteAccess({ campaignId: data.campaignId, userId });
+  return await db.session
+    .create({
+      data,
+    })
+    .catch(handleDuplicateName);
 }
 
 export async function updateSession({
@@ -124,8 +125,10 @@ export async function updateSession({
 }): Promise<Session> {
   await enforceWriteAccess({ campaignId, userId });
 
-  return await db.session.update({
-    where: { id: sessionId },
-    data: { name, summary, notes, privateNotes },
-  });
+  return await db.session
+    .update({
+      where: { id: sessionId },
+      data: { name, summary, notes, privateNotes },
+    })
+    .catch(handleDuplicateName);
 }

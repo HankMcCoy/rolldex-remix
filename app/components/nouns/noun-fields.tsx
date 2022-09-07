@@ -1,6 +1,6 @@
 import { TextField, LabelRow, TextareaField, MarkdownField } from "../forms";
 
-export const getFields = ({
+export const NounFields = ({
   data,
   errors,
 }: {

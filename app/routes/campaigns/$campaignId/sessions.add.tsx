@@ -5,22 +5,28 @@ import {
   useLoaderData,
   redirect,
   MetaFunction,
+  useActionData,
 } from "remix";
-import { TextField, TextareaField, MarkdownField } from "~/components/forms";
+import { z } from "zod";
 import { Campaign } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { createSession } from "~/queries/sessions.server";
 import { requireUserId } from "~/session.server";
 import { getCampaign } from "~/queries/campaigns.server";
 import { getParams } from "~/util";
+import { badRequest } from "~/util/http-errors.server";
+import { SessionFields } from "~/components/sessions/session-fields";
+import { DuplicateNameError } from "~/queries/errors.server";
+import { basicEntityValidation } from "~/shared/validations/basic-entity";
 
 interface Props {
   params: {
     campaignId: string;
   };
 }
-export default function EditSession({ params }: Props) {
+export default function AddSession({ params }: Props) {
   const { campaign } = useLoaderData<LoaderData>();
+  const errors = useActionData<ActionData>();
 
   return (
     <FormPage
@@ -32,11 +38,7 @@ export default function EditSession({ params }: Props) {
       ]}
     >
       <input type="hidden" name="campaignId" value={campaign.id} />
-      <TextField name="name" label="Name:" />
-
-      <TextareaField name="summary" label="Summary:" rows={3} />
-      <MarkdownField name="notes" label="Notes:" />
-      <MarkdownField name="privateNotes" label="Private Notes:" />
+      <SessionFields errors={errors?.fieldErrors} />
     </FormPage>
   );
 }
@@ -60,13 +62,28 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   return { campaign };
 };
 
+const validation = basicEntityValidation;
+type Fields = z.infer<typeof validation>;
+type ActionData = z.typeToFlattenedError<Fields> | undefined;
 export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const fields = await getFormFields({
     request,
   });
+  const parseResult = validation.safeParse(fields);
+  if (!parseResult.success) {
+    return badRequest<ActionData>(parseResult.error.flatten());
+  }
 
-  const session = await createSession({ userId, fields });
+  let session;
+  try {
+    session = await createSession({ userId, data: parseResult.data });
+  } catch (e) {
+    if (e instanceof DuplicateNameError) {
+      return badRequest({ fieldErrors: { name: ["Must be unique"] } });
+    }
+    throw e;
+  }
 
   return redirect(`/campaigns/${fields.campaignId}/sessions/${session.id}`);
 };

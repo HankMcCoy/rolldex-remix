@@ -160,7 +160,7 @@ export let action: ActionFunction = async ({ request, params }) => {
       "campaignId",
     ] as const);
 
-    deleteNoun({ nounId, campaignId, userId });
+    await deleteNoun({ nounId, campaignId, userId });
     return redirect(`/campaigns/${campaignId}`);
   }
 
