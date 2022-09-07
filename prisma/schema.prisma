@@ -43,6 +43,7 @@ model Session {
   summary      String
   notes        String
   privateNotes String
+  isSecret     Boolean  @default(false)
 
   campaign Campaign @relation(fields: [campaignId], references: [id])
   @@unique([campaignId, name])
@@ -58,6 +59,7 @@ model Noun {
   notes        String
   privateNotes String
   nounType     String
+  isSecret     Boolean  @default(false)
 
   campaign Campaign @relation(fields: [campaignId], references: [id])
   @@unique([campaignId, name])

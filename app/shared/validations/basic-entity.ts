@@ -6,4 +6,5 @@ export const basicEntityValidation = z.object({
   summary: z.string().min(1, "Required"),
   notes: z.string(),
   privateNotes: z.string(),
+  isSecret: z.preprocess((s) => (s === "on" ? true : false), z.boolean()),
 });

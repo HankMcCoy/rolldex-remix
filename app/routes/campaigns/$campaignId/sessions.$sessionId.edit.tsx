@@ -83,15 +83,14 @@ export const action: ActionFunction = async ({ request }) => {
   if (!parseResult.success) {
     return badRequest<ActionData>(parseResult.error.flatten());
   }
-  const { campaignId, sessionId, name, summary, notes, privateNotes } =
-    parseResult.data;
+  const { campaignId, sessionId, ...session } = parseResult.data;
 
   try {
     await updateSession({
       userId,
       campaignId,
       sessionId,
-      data: { name, summary, notes, privateNotes },
+      data: session,
     });
   } catch (e) {
     if (e instanceof DuplicateNameError) {

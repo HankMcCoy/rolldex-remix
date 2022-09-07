@@ -111,7 +111,7 @@ export async function updateSession({
   userId,
   campaignId,
   sessionId,
-  data: { name, summary, notes, privateNotes },
+  data: { name, summary, notes, privateNotes, isSecret },
 }: {
   userId: string;
   campaignId: string;
@@ -121,6 +121,7 @@ export async function updateSession({
     summary: string;
     notes: string;
     privateNotes: string;
+    isSecret: boolean;
   };
 }): Promise<Session> {
   await enforceWriteAccess({ campaignId, userId });
@@ -128,7 +129,7 @@ export async function updateSession({
   return await db.session
     .update({
       where: { id: sessionId },
-      data: { name, summary, notes, privateNotes },
+      data: { name, summary, notes, privateNotes, isSecret },
     })
     .catch(handleDuplicateName);
 }

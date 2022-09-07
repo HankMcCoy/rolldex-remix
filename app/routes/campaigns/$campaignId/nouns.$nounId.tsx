@@ -25,6 +25,7 @@ import { deleteNoun, getNounAndCampaign } from "~/queries/nouns.server";
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
 import { getCampaignAccessLevel } from "~/queries/campaigns.server";
+import Lock from "~/components/icons/lock";
 
 export default function ViewNoun() {
   const { noun, accessLevel, campaign, relations } =
@@ -37,7 +38,14 @@ export default function ViewNoun() {
 
   return (
     <Content
-      heading={noun.name}
+      heading={
+        <>
+          <div className="flex items-center">
+            {noun.isSecret && <Lock className="mr-1" />}
+            {noun.name}
+          </div>
+        </>
+      }
       breadcrumbs={[
         { text: "Campaigns", href: "/campaigns" },
         { text: campaign.name, href: `/campaigns/${campaign.id}` },

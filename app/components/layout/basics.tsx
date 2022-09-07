@@ -68,7 +68,7 @@ interface Breadcrumb {
   href: string;
 }
 interface PageHeaderProps {
-  heading: string;
+  heading: React.ReactNode;
   breadcrumbs?: Array<Breadcrumb>;
   controls?: React.ReactNode;
 }

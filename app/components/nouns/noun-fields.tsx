@@ -1,4 +1,10 @@
-import { TextField, LabelRow, TextareaField, MarkdownField } from "../forms";
+import {
+  TextField,
+  LabelRow,
+  TextareaField,
+  MarkdownField,
+  SwitchField,
+} from "../forms";
 
 export const NounFields = ({
   data,
@@ -12,6 +18,7 @@ export const NounFields = ({
     summary?: string;
     notes?: string;
     privateNotes?: string;
+    isSecret?: boolean;
   };
   errors: {
     name?: string[];
@@ -62,6 +69,11 @@ export const NounFields = ({
       label="Private Notes:"
       defaultValue={data.privateNotes}
       errors={errors.privateNotes}
+    />
+    <SwitchField
+      label="Is secret?"
+      name="isSecret"
+      defaultValue={data.isSecret}
     />
   </>
 );

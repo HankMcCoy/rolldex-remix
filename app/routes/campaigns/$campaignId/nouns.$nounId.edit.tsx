@@ -93,13 +93,12 @@ export const action: ActionFunction = async ({ request }) => {
     return badRequest<ActionData>(parseResult.error.flatten());
   }
 
-  const { campaignId, nounId, name, summary, notes, privateNotes, nounType } =
-    parseResult.data;
+  const { campaignId, nounId, ...noun } = parseResult.data;
   await updateNoun({
     userId,
     campaignId,
     nounId,
-    data: { name, summary, notes, privateNotes, nounType },
+    data: noun,
   });
 
   return redirect(`/campaigns/${campaignId}/nouns/${nounId}`);

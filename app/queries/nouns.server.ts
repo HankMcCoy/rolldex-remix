@@ -96,6 +96,7 @@ export async function createNoun({
     notes: string;
     privateNotes: string;
     nounType: string;
+    isSecret: boolean;
   };
 }): Promise<Noun> {
   await enforceWriteAccess({ campaignId: data.campaignId, userId });
@@ -109,7 +110,7 @@ export async function updateNoun({
   userId,
   campaignId,
   nounId,
-  data: { name, summary, notes, privateNotes, nounType },
+  data: { name, summary, notes, privateNotes, nounType, isSecret },
 }: {
   userId: string;
   campaignId: string;
@@ -120,12 +121,13 @@ export async function updateNoun({
     notes: string;
     privateNotes: string;
     nounType: string;
+    isSecret: boolean;
   };
 }): Promise<Noun> {
   await enforceWriteAccess({ campaignId, userId });
 
   return await db.noun.update({
     where: { id: nounId },
-    data: { name, summary, notes, privateNotes, nounType },
+    data: { name, summary, notes, privateNotes, nounType, isSecret },
   });
 }
