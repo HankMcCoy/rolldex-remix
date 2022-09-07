@@ -13,6 +13,7 @@ import { requireUserId } from "~/session.server";
 import { getMembers } from "~/queries/members.server";
 import { getSessionsForCampaign } from "~/queries/sessions.server";
 import { getCampaignAccessLevel } from "~/queries/campaigns.server";
+import Lock from "~/components/icons/lock";
 
 export default function ViewCampaign() {
   const {
@@ -35,7 +36,16 @@ export default function ViewCampaign() {
     (n: Noun) => (
       <LinkBox
         key={n.id}
-        title={n.name}
+        title={
+          n.isSecret ? (
+            <div className="flex items-center">
+              <Lock size={24} className="mr-1 -ml-1" />
+              {n.name}
+            </div>
+          ) : (
+            n.name
+          )
+        }
         desc={n.summary}
         href={`/campaigns/${id}/nouns/${n.id}`}
         deleteable={isAdmin}

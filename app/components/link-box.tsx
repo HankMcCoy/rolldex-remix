@@ -6,7 +6,7 @@ export const linkBoxFrameClasses =
   "transition-all duration-100 block border bg-gray-50 border-gray-300 hover:border-gray-400 hover:bg-white";
 
 interface Props {
-  title: string;
+  title: React.ReactNode;
   desc?: string;
   href: string;
   deleteable?: boolean;
