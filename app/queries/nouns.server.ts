@@ -70,11 +70,9 @@ export async function getNounsForCampaign({
   });
 
   // Clear out any private fields
-  if (accessLevel === "READ_ONLY") {
-    nouns.forEach(enforceMemberVisibility);
-  }
-
-  return nouns;
+  return accessLevel === "READ_ONLY"
+    ? nouns.map(enforceMemberVisibility)
+    : nouns;
 }
 
 export async function deleteNoun({

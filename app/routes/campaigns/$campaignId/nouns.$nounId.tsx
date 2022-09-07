@@ -146,7 +146,7 @@ export let loader: LoaderFunction = async ({ params, request }) => {
   const [accessLevel, { noun, campaign }, relations] = await Promise.all([
     getCampaignAccessLevel({ campaignId, userId }),
     getNounAndCampaign({ nounId, campaignId, userId }),
-    getRelationsForNoun({ nounId, campaignId }),
+    getRelationsForNoun({ nounId, campaignId, userId }),
   ]);
 
   if (!noun || !campaign) throw new Response("Not found", { status: 404 });

@@ -1,6 +1,11 @@
 import { Noun, Session } from "@prisma/client";
 import { db } from "~/db.server";
 import { getCampaign } from "./campaigns.server";
+import { getNounsForCampaign } from "./nouns.server";
+import {
+  getSessionAndCampaign,
+  getSessionsForCampaign,
+} from "./sessions.server";
 
 type Searchable = {
   name: string;
@@ -45,10 +50,12 @@ function referenceEachOther(a: Searchable, b: Searchable) {
   return false;
 }
 type GetRelationsForNounArgs = {
+  userId: string;
   nounId: string;
   campaignId: string;
 };
 export async function getRelationsForNoun({
+  userId,
   nounId,
   campaignId,
 }: GetRelationsForNounArgs): Promise<{
@@ -60,11 +67,8 @@ export async function getRelationsForNoun({
 }> {
   const [noun, allNouns, allSessions] = await Promise.all([
     db.noun.findUnique({ where: { id: nounId } }),
-    db.noun.findMany({ where: { campaignId }, orderBy: { name: "asc" } }),
-    db.session.findMany({
-      where: { campaignId },
-      orderBy: { createdAt: "asc" },
-    }),
+    getNounsForCampaign({ campaignId, userId }),
+    getSessionsForCampaign({ campaignId, userId }),
   ]);
   if (!noun) throw new Response("Not found", { status: 404 });
   const matchingNouns = allNouns.filter((nounToCheck) =>
@@ -90,9 +94,9 @@ export async function getRelationsForSession({
 }: GetRelationsForSessionArgs): Promise<NounsByType> {
   await getCampaign({ campaignId, userId });
 
-  const [session, allNouns] = await Promise.all([
-    db.session.findUnique({ where: { id: sessionId } }),
-    db.noun.findMany({ where: { campaignId }, orderBy: { name: "asc" } }),
+  const [{ session }, allNouns] = await Promise.all([
+    getSessionAndCampaign({ sessionId, campaignId, userId }),
+    getNounsForCampaign({ campaignId, userId }),
   ]);
   if (!session) throw new Response("Not found", { status: 404 });
 
