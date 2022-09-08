@@ -1,7 +1,6 @@
 import { Noun, Session } from "@prisma/client";
-import { db } from "~/db.server";
 import { getCampaign } from "./campaigns.server";
-import { getNounsForCampaign } from "./nouns.server";
+import { getNounAndCampaign, getNounsForCampaign } from "./nouns.server";
 import {
   getSessionAndCampaign,
   getSessionsForCampaign,
@@ -65,8 +64,8 @@ export async function getRelationsForNoun({
   factions: Array<Noun>;
   sessions: Array<Session>;
 }> {
-  const [noun, allNouns, allSessions] = await Promise.all([
-    db.noun.findUnique({ where: { id: nounId } }),
+  const [{ noun }, allNouns, allSessions] = await Promise.all([
+    getNounAndCampaign({ nounId, campaignId, userId }),
     getNounsForCampaign({ campaignId, userId }),
     getSessionsForCampaign({ campaignId, userId }),
   ]);

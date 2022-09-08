@@ -9,6 +9,7 @@ const NounTypeMap = Object.freeze({
   THING: null,
   FACTION: null,
 });
+export const nounTypeList = Object.keys(NounTypeMap);
 export type NounType = keyof typeof NounTypeMap;
 export const asNounType = (
   val: string | undefined | null

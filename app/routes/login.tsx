@@ -1,13 +1,12 @@
 import { ActionFunction, MetaFunction, useActionData } from "remix";
 import { z } from "zod";
 import { LabelRow } from "~/components/forms";
-import { db } from "~/db.server";
 import { createUserSession } from "~/session.server";
 import { getFormFields } from "~/util.server";
-import { comparePassword } from "~/queries/authentication.server";
 import { ErrorText, Heading } from "~/components/text";
 import { Button } from "~/components/layout";
 import { badRequest } from "~/util/http-errors.server";
+import { getUserByLogin } from "~/queries/users.server";
 
 export default function Login() {
   const { fields, errors } = useActionData<ActionData>() ?? {};
@@ -86,13 +85,8 @@ export const action: ActionFunction = async ({ request }) => {
 
   const { email, plaintextPassword } = parseResult.data;
 
-  const user = await db.user.findUnique({ where: { email } });
+  const user = await getUserByLogin({ email, plaintextPassword });
   if (!user) {
-    return badRequest({ fields, errors: { formErrors: ["Invalid login"] } });
-  }
-
-  const passwordMatches = await comparePassword(plaintextPassword, user);
-  if (!passwordMatches) {
     return badRequest({ fields, errors: { formErrors: ["Invalid login"] } });
   }
 

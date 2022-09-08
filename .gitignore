@@ -12,5 +12,5 @@ api/build
 app/tailwind.css
 app/styles
 
-prisma/dev.db
+prisma/*.db
 prisma/dev.db-journal

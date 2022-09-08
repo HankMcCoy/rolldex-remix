@@ -5,6 +5,7 @@ import {
   getCampaign,
   getCampaignAccessLevel,
 } from "./campaigns.server";
+import { handleDuplicateName } from "./errors.server";
 
 function enforceMemberVisibility(noun: Noun): Noun {
   return {
@@ -104,9 +105,11 @@ export async function createNoun({
   };
 }): Promise<Noun> {
   await enforceWriteAccess({ campaignId: data.campaignId, userId });
-  const noun = await db.noun.create({
-    data,
-  });
+  const noun = await db.noun
+    .create({
+      data,
+    })
+    .catch(handleDuplicateName);
   return noun;
 }
 
@@ -130,8 +133,10 @@ export async function updateNoun({
 }): Promise<Noun> {
   await enforceWriteAccess({ campaignId, userId });
 
-  return await db.noun.update({
-    where: { id: nounId },
-    data: { name, summary, notes, privateNotes, nounType, isSecret },
-  });
+  return await db.noun
+    .update({
+      where: { id: nounId },
+      data: { name, summary, notes, privateNotes, nounType, isSecret },
+    })
+    .catch(handleDuplicateName);
 }
