@@ -1,5 +1,6 @@
 import { Campaign, Prisma, User } from "@prisma/client";
 import { db } from "~/db.server";
+import { Response } from "@remix-run/node";
 
 export async function getCampaign({
   campaignId,
@@ -8,6 +9,8 @@ export async function getCampaign({
   campaignId: string;
   userId: string;
 }): Promise<Campaign | null> {
+  await enforceReadAccess({ campaignId, userId });
+
   const campaign = await db.campaign.findUnique({ where: { id: campaignId } });
   if (!campaign) return null;
 
@@ -151,8 +154,11 @@ export async function enforceWriteAccess({
   userId: string;
 }): Promise<void> {
   const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
-  if (accessLevel !== "ADMIN")
-    throw new Error("User does not have write access to this campaign");
+  if (accessLevel !== "ADMIN") {
+    throw new Response("Forbidden", {
+      status: 403,
+    });
+  }
 }
 
 export async function enforceReadAccess({
@@ -163,6 +169,9 @@ export async function enforceReadAccess({
   userId: string;
 }): Promise<void> {
   const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
-  if (accessLevel !== "ADMIN" && accessLevel !== "READ_ONLY")
-    throw new Error("User does not have read access to this campaign");
+  if (accessLevel === "NONE") {
+    throw new Response("Forbidden", {
+      status: 403,
+    });
+  }
 }

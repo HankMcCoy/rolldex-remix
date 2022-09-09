@@ -4,6 +4,7 @@ import {
   createCampaignWithMember,
 } from "~/test-utils/factories/campaign-factory";
 import { createNoun } from "~/test-utils/factories/noun-factory";
+import { createUser } from "~/test-utils/factories/user-factory";
 import { getNounAndCampaign, getNounsForCampaign } from "./nouns.server";
 
 describe("getNounAndCampaign", () => {
@@ -76,6 +77,22 @@ describe("getNounAndCampaign", () => {
 
     expect(result.noun).toBe(null);
     expect(result.campaign).toBe(null);
+  });
+
+  test("does not return matching noun and campaign when not a member or admin", async () => {
+    const campaign = await createCampaign();
+    const totallyUnrelatedUser = await createUser();
+    const noun = await createNoun({
+      campaignId: campaign.id,
+    });
+
+    expect(
+      getNounAndCampaign({
+        nounId: noun.id,
+        campaignId: campaign.id,
+        userId: totallyUnrelatedUser.id,
+      })
+    ).rejects.toHaveProperty("status", 403);
   });
 });
 
