@@ -80,7 +80,10 @@ export const action: ActionFunction = async ({ request }) => {
     session = await createSession({ userId, data: parseResult.data });
   } catch (e) {
     if (e instanceof DuplicateNameError) {
-      return badRequest({ fieldErrors: { name: ["Must be unique"] } });
+      return badRequest<ActionData>({
+        fieldErrors: { name: ["Must be unique"] },
+        formErrors: [],
+      });
     }
     throw e;
   }

@@ -19,6 +19,7 @@ import { requireUserId } from "~/session.server";
 import { createNoun } from "~/queries/nouns.server";
 import { NounFields } from "~/components/nouns/noun-fields";
 import { basicEntityValidation } from "~/shared/validations/basic-entity";
+import { DuplicateNameError } from "~/queries/errors.server";
 
 export default function AddNoun() {
   const { nounType, campaign, name } = useLoaderData<LoaderData>();
@@ -85,6 +86,17 @@ export const action: ActionFunction = async ({ request }) => {
     return badRequest<ActionData>(parseResult.error.flatten());
   }
 
-  const noun = await createNoun({ userId, data: parseResult.data });
+  let noun;
+  try {
+    noun = await createNoun({ userId, data: parseResult.data });
+  } catch (e) {
+    if (e instanceof DuplicateNameError) {
+      return badRequest<ActionData>({
+        fieldErrors: { name: ["Must be unique"] },
+        formErrors: [],
+      });
+    }
+    throw e;
+  }
   return redirect(`/campaigns/${fields.campaignId}/nouns/${noun.id}`);
 };

@@ -21,6 +21,7 @@ import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
 import { NounFields } from "~/components/nouns/noun-fields";
 import { basicEntityValidation } from "~/shared/validations/basic-entity";
+import { DuplicateNameError } from "~/queries/errors.server";
 
 export const meta: MetaFunction = ({
   data,
@@ -94,12 +95,22 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   const { campaignId, nounId, ...noun } = parseResult.data;
-  await updateNoun({
-    userId,
-    campaignId,
-    nounId,
-    data: noun,
-  });
+  try {
+    await updateNoun({
+      userId,
+      campaignId,
+      nounId,
+      data: noun,
+    });
+  } catch (e) {
+    if (e instanceof DuplicateNameError) {
+      return badRequest<ActionData>({
+        fieldErrors: { name: ["Must be unique"] },
+        formErrors: [],
+      });
+    }
+    throw e;
+  }
 
   return redirect(`/campaigns/${campaignId}/nouns/${nounId}`);
 };
