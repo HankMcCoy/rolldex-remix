@@ -1,6 +1,7 @@
 import { db } from "~/db.server";
 import { randText, randParagraph } from "@ngneat/falso";
 import { createUser } from "./user-factory";
+import { createMember } from "./member-factory";
 
 interface Overrides {
   userId?: string;
@@ -24,4 +25,15 @@ export async function createCampaign({ overrides }: Args = {}) {
       summary: overrides?.summary ?? randParagraph(),
     },
   });
+}
+
+export async function createCampaignWithMember(args: Args = {}) {
+  const readOnlyUser = await createUser();
+  const campaign = await createCampaign(args);
+  await createMember({
+    campaignId: campaign.id,
+    overrides: { email: readOnlyUser.email },
+  });
+
+  return { readOnlyUser, campaign };
 }

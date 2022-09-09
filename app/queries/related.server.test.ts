@@ -1,6 +1,8 @@
 import { describe, expect, test, afterEach } from "@jest/globals";
-import { createCampaign } from "~/test-utils/factories/campaign-factory";
-import { createMember } from "~/test-utils/factories/member-factory";
+import {
+  createCampaign,
+  createCampaignWithMember,
+} from "~/test-utils/factories/campaign-factory";
 import { createNoun } from "~/test-utils/factories/noun-factory";
 import { createUser } from "~/test-utils/factories/user-factory";
 import { getRelationsForNoun } from "./related.server";
@@ -211,12 +213,7 @@ describe("getRelationsForNoun", () => {
   });
 
   test("does not consider nouns A and B related if A's privateNotes references A's name when read only", async () => {
-    const campaign = await createCampaign();
-    const readOnlyUser = await createUser();
-    await createMember({
-      campaignId: campaign.id,
-      overrides: { email: readOnlyUser.email },
-    });
+    const { readOnlyUser, campaign } = await createCampaignWithMember();
 
     const nounA = await createNoun({
       campaignId: campaign.id,
@@ -251,12 +248,7 @@ describe("getRelationsForNoun", () => {
   });
 
   test("does not consider nouns A and B related if B's privateNotes references A's name when read only", async () => {
-    const campaign = await createCampaign();
-    const readOnlyUser = await createUser();
-    await createMember({
-      campaignId: campaign.id,
-      overrides: { email: readOnlyUser.email },
-    });
+    const { campaign, readOnlyUser } = await createCampaignWithMember();
 
     const nounA = await createNoun({
       campaignId: campaign.id,
