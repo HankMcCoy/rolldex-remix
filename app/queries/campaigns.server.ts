@@ -1,6 +1,8 @@
 import { Campaign, Prisma, User } from "@prisma/client";
 import { db } from "~/db.server";
 import { Response } from "@remix-run/node";
+import { json } from "remix";
+import { isErrorResponse } from "@remix-run/react/data";
 
 export async function getCampaign({
   campaignId,
@@ -154,9 +156,13 @@ export async function enforceWriteAccess({
   userId: string;
 }): Promise<void> {
   const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
-  if (accessLevel !== "ADMIN") {
-    throw new Response("Forbidden", {
+  if (accessLevel === "READ_ONLY") {
+    throw json("Forbidden", {
       status: 403,
+    });
+  } else if (accessLevel === "NONE") {
+    throw json("Not Found", {
+      status: 404,
     });
   }
 }
@@ -170,8 +176,8 @@ export async function enforceReadAccess({
 }): Promise<void> {
   const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
   if (accessLevel === "NONE") {
-    throw new Response("Forbidden", {
-      status: 403,
+    throw json("Not Found", {
+      status: 404,
     });
   }
 }

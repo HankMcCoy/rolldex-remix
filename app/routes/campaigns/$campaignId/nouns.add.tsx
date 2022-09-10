@@ -13,7 +13,7 @@ import { z } from "zod";
 import { Campaign } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { badRequest } from "~/util/http-errors.server";
-import { getCampaign } from "~/queries/campaigns.server";
+import { enforceWriteAccess, getCampaign } from "~/queries/campaigns.server";
 import { getParams } from "~/util";
 import { requireUserId } from "~/session.server";
 import { createNoun } from "~/queries/nouns.server";
@@ -65,7 +65,10 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   const nounType = url.searchParams.get("nounType");
   const name = url.searchParams.get("name") || undefined;
 
-  const campaign = await getCampaign({ campaignId, userId });
+  const [campaign] = await Promise.all([
+    getCampaign({ campaignId, userId }),
+    enforceWriteAccess({ campaignId, userId }),
+  ]);
 
   return { nounType, campaign, name };
 };

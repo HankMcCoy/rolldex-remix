@@ -4,6 +4,7 @@ import {
   enforceWriteAccess,
   getCampaignAccessLevel,
   getCampaign,
+  enforceReadAccess,
 } from "./campaigns.server";
 import { handleDuplicateName } from "./errors.server";
 
@@ -27,8 +28,8 @@ export async function getSessionsForCampaign({
   orderBy?: Prisma.Enumerable<Prisma.SessionOrderByWithRelationInput>;
   take?: number;
 }): Promise<Session[]> {
+  await enforceReadAccess({ campaignId, userId });
   const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
-  if (accessLevel === "NONE") throw new Error("Not authorized to access");
 
   const sessions = await db.session.findMany({
     where: {
@@ -40,13 +41,9 @@ export async function getSessionsForCampaign({
     take,
   });
 
-  if (accessLevel === "READ_ONLY") {
-    sessions.forEach((s) => {
-      s.privateNotes === "";
-    });
-  }
-
-  return sessions;
+  return accessLevel === "READ_ONLY"
+    ? sessions.map(enforceMemberVisibility)
+    : sessions;
 }
 
 export async function getSessionAndCampaign({

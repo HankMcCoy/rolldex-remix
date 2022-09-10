@@ -12,7 +12,7 @@ import { Campaign } from "@prisma/client";
 import { getFormFields } from "~/util.server";
 import { createSession } from "~/queries/sessions.server";
 import { requireUserId } from "~/session.server";
-import { getCampaign } from "~/queries/campaigns.server";
+import { enforceWriteAccess, getCampaign } from "~/queries/campaigns.server";
 import { getParams } from "~/util";
 import { badRequest } from "~/util/http-errors.server";
 import { SessionFields } from "~/components/sessions/session-fields";
@@ -57,7 +57,10 @@ export let loader: LoaderFunction = async ({ request, params }) => {
   const { campaignId } = getParams(params, ["campaignId"] as const);
   const userId = await requireUserId(request);
 
-  const campaign = await getCampaign({ campaignId, userId });
+  const [campaign] = await Promise.all([
+    getCampaign({ campaignId, userId }),
+    enforceWriteAccess({ campaignId, userId }),
+  ]);
 
   return { campaign };
 };

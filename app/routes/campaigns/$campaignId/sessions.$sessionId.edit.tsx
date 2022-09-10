@@ -20,6 +20,7 @@ import { badRequest } from "~/util/http-errors.server";
 import { SessionFields } from "~/components/sessions/session-fields";
 import { DuplicateNameError } from "~/queries/errors.server";
 import { basicEntityValidation } from "~/shared/validations/basic-entity";
+import { enforceWriteAccess } from "~/queries/campaigns.server";
 
 export default function EditSession() {
   const { session, campaign } = useLoaderData<LoaderData>();
@@ -59,11 +60,16 @@ export let loader: LoaderFunction = async ({ request, params }) => {
     "campaignId",
   ] as const);
   const userId = await requireUserId(request);
-  const { campaign, session } = await getSessionAndCampaign({
-    sessionId,
-    campaignId,
-    userId,
-  });
+
+  const [{ campaign, session }] = await Promise.all([
+    getSessionAndCampaign({
+      sessionId,
+      campaignId,
+      userId,
+    }),
+    enforceWriteAccess({ campaignId, userId }),
+  ]);
+
   return { session, campaign };
 };
 

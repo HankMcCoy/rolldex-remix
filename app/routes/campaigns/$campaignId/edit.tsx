@@ -9,7 +9,11 @@ import {
 import { TextField, TextareaField } from "~/components/forms";
 import { getFormFields } from "~/util.server";
 import { Campaign } from "@prisma/client";
-import { getCampaign, updateCampaign } from "~/queries/campaigns.server";
+import {
+  enforceWriteAccess,
+  getCampaign,
+  updateCampaign,
+} from "~/queries/campaigns.server";
 import { requireUserId } from "~/session.server";
 import { getParams } from "~/util";
 
@@ -44,7 +48,12 @@ interface LoaderData {
 export let loader: LoaderFunction = async ({ request, params }) => {
   const { campaignId } = getParams(params, ["campaignId"] as const);
   const userId = await requireUserId(request);
-  const campaign = await getCampaign({ campaignId, userId });
+
+  const [campaign] = await Promise.all([
+    getCampaign({ campaignId, userId }),
+    enforceWriteAccess({ campaignId, userId }),
+  ]);
+
   return { campaign };
 };
 

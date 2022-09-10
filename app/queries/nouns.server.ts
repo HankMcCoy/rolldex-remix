@@ -1,6 +1,7 @@
 import { Campaign, Noun, Prisma } from "@prisma/client";
 import { db } from "~/db.server";
 import {
+  enforceReadAccess,
   enforceWriteAccess,
   getCampaign,
   getCampaignAccessLevel,
@@ -55,9 +56,8 @@ export async function getNounsForCampaign({
   orderBy?: Prisma.Enumerable<Prisma.NounOrderByWithRelationInput>;
   take?: number;
 }): Promise<Noun[]> {
+  await enforceReadAccess({ campaignId, userId });
   const accessLevel = await getCampaignAccessLevel({ campaignId, userId });
-  if (accessLevel === "NONE")
-    throw new Error("User does not have access to campaign");
 
   const nouns = await db.noun.findMany({
     where: {

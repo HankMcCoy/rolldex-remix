@@ -22,6 +22,7 @@ import { getParams } from "~/util";
 import { NounFields } from "~/components/nouns/noun-fields";
 import { basicEntityValidation } from "~/shared/validations/basic-entity";
 import { DuplicateNameError } from "~/queries/errors.server";
+import { enforceWriteAccess } from "~/queries/campaigns.server";
 
 export const meta: MetaFunction = ({
   data,
@@ -68,11 +69,14 @@ export let loader: LoaderFunction = async ({ params, request }) => {
     "campaignId",
   ] as const);
 
-  const { noun, campaign } = await getNounAndCampaign({
-    nounId,
-    campaignId,
-    userId,
-  });
+  const [{ noun, campaign }] = await Promise.all([
+    getNounAndCampaign({
+      nounId,
+      campaignId,
+      userId,
+    }),
+    enforceWriteAccess({ campaignId, userId }),
+  ]);
 
   return { noun, campaign };
 };
